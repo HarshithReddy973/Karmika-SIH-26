@@ -1,0 +1,19 @@
+{
+  "app_name": "Coop Gig Services",
+  "login": "Login",
+  "signup": "Sign Up",
+  "email": "Email",
+  "password": "Password",
+  "full_name": "Full Name",
+  "phone": "Phone Number",
+  "i_am_a": "I am a",
+  "customer": "Customer",
+  "worker": "Worker",
+  "submit": "Submit",
+  "already_have_account": "Already have an account? Login",
+  "need_account": "Need an account? Sign up",
+  "logout": "Logout",
+  "welcome": "Welcome",
+  "loading": "Loading...",
+  "error_generic": "Something went wrong. Please try again."
+}
