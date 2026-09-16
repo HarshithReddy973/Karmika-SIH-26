@@ -2,3 +2,5 @@ node_modules
 dist
 .env
 .env.local
+README.md
+.DS_Store
