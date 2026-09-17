@@ -17,6 +17,7 @@ export default function BookService() {
   const [scheduledTime, setScheduledTime] = useState('')
   const [isEmergency, setIsEmergency] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [gettingLocation, setGettingLocation] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
@@ -30,8 +31,6 @@ export default function BookService() {
         else setService(data)
       })
   }, [serviceId])
-
-  const [gettingLocation, setGettingLocation] = useState(false)
 
   function useMyLocation() {
     setErrorMsg('')
@@ -50,7 +49,6 @@ export default function BookService() {
       },
       (err) => {
         setGettingLocation(false)
-        // err.code: 1 = permission denied, 2 = position unavailable, 3 = timeout
         if (err.code === 1) {
           setErrorMsg(
             'Location permission was denied. Click the 🔒/ⓘ icon next to the address bar → ' +
@@ -77,8 +75,6 @@ export default function BookService() {
 
     setSubmitting(true)
     try {
-      // Step 1: create the booking row (no location yet - geography
-      // columns are set separately via RPC, see set_booking_location below).
       const { data: booking, error: insertErr } = await supabase
         .from('bookings')
         .insert({
@@ -93,7 +89,6 @@ export default function BookService() {
 
       if (insertErr) throw insertErr
 
-      // Step 2: attach the geo-location to that booking.
       const { error: locErr } = await supabase.rpc('set_booking_location', {
         p_booking_id: booking.id,
         p_lat: lat,
@@ -101,7 +96,6 @@ export default function BookService() {
       })
       if (locErr) throw locErr
 
-      // Step 3: go see who's nearby (Phase 3 matching engine).
       navigate(`/customer/matches/${booking.id}`)
     } catch (err) {
       setErrorMsg(err.message || 'Something went wrong creating your booking.')
@@ -114,8 +108,8 @@ export default function BookService() {
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <h2>Book: {service.name}</h2>
-      <p style={{ color: '#666' }}>Base price: ₹{service.base_price}</p>
+      <h2>{t('book')}: {service.name}</h2>
+      <p style={{ color: '#666' }}>₹{service.base_price} {t('onwards')}</p>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -124,12 +118,12 @@ export default function BookService() {
             checked={isEmergency}
             onChange={(e) => setIsEmergency(e.target.checked)}
           />
-          🚨 Emergency / On-demand (skip scheduling, find the fastest available worker now)
+          🚨 {t('emergency_option')}
         </label>
 
         {!isEmergency && (
           <label>
-            Preferred date &amp; time
+            {t('preferred_datetime')}
             <input
               type="datetime-local"
               value={scheduledTime}
@@ -142,10 +136,10 @@ export default function BookService() {
 
         <div>
           <button type="button" onClick={useMyLocation} disabled={gettingLocation}>
-            {gettingLocation ? 'Getting location...' : '📍 Use My Current Location'}
+            {gettingLocation ? t('getting_location') : `📍 ${t('use_my_location')}`}
           </button>
           <p style={{ fontSize: 13, color: '#666', margin: '8px 0' }}>
-            ...or tap anywhere on the map to set the service location:
+            {t('tap_map_instructions')}
           </p>
           <MapPicker lat={lat} lng={lng} onChange={(la, ln) => { setLat(la); setLng(ln) }} />
         </div>
@@ -153,7 +147,7 @@ export default function BookService() {
         {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
 
         <button type="submit" disabled={submitting}>
-          {submitting ? t('loading') : 'Find Nearby Workers →'}
+          {submitting ? t('loading') : `${t('find_nearby_workers')} →`}
         </button>
       </form>
     </div>

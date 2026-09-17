@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function LoginSignup() {
   const { t } = useTranslation()
@@ -57,6 +58,9 @@ export default function LoginSignup() {
 
   return (
     <div style={{ maxWidth: 400, margin: '60px auto', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <LanguageSwitcher />
+      </div>
       <h1>{t('app_name')}</h1>
       <h2>{mode === 'login' ? t('login') : t('signup')}</h2>
 

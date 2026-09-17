@@ -8,7 +8,7 @@ import MyBookings from './pages/MyBookings'
 import BookingTracker from './pages/BookingTracker'
 import WorkerJobRequests from './pages/WorkerJobRequests'
 import WorkerProfileSetup from './pages/WorkerProfileSetup'
-import AdminHome from './pages/AdminHome'
+import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
@@ -29,8 +29,8 @@ export default function App() {
         <Route path="/worker" element={<ProtectedRoute allowedRole="worker"><WorkerJobRequests /></ProtectedRoute>} />
         <Route path="/worker/profile" element={<ProtectedRoute allowedRole="worker"><WorkerProfileSetup /></ProtectedRoute>} />
 
-        {/* Admin - still Phase 1 stub, built out in Phase 4 */}
-        <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminHome /></ProtectedRoute>} />
+        {/* Admin routes - Phase 4 */}
+        <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

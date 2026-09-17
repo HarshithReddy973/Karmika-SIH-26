@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 
 const ALL_SKILLS = ['electrician', 'plumber', 'cleaning', 'carpenter', 'painter', 'caregiver']
 
 export default function WorkerProfileSetup() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [skills, setSkills] = useState([])
   const [isAvailable, setIsAvailable] = useState(true)
@@ -47,7 +49,7 @@ export default function WorkerProfileSetup() {
       setStatusMsg('Your browser does not support location access.')
       return
     }
-    setStatusMsg('Getting your location...')
+    setStatusMsg(t('getting_location'))
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { error } = await supabase.rpc('set_worker_location', {
@@ -75,11 +77,10 @@ export default function WorkerProfileSetup() {
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <Link to="/worker">← Back to Job Requests</Link>
-      <h2>My Worker Profile</h2>
+      <Link to="/worker">← {t('new_requests_near_you')}</Link>
+      <h2>{t('my_profile_title')}</h2>
 
       <p>
-        Verification status:{' '}
         {verified ? (
           <b style={{ color: 'green' }}>✅ Verified</b>
         ) : (
@@ -87,7 +88,7 @@ export default function WorkerProfileSetup() {
         )}
       </p>
 
-      <h3>My Skills</h3>
+      <h3>{t('my_skills')}</h3>
       {ALL_SKILLS.map((skill) => (
         <label key={skill} style={{ display: 'block', marginBottom: 4 }}>
           <input type="checkbox" checked={skills.includes(skill)} onChange={() => toggleSkill(skill)} />
@@ -95,18 +96,18 @@ export default function WorkerProfileSetup() {
         </label>
       ))}
 
-      <h3 style={{ marginTop: 20 }}>Availability</h3>
+      <h3 style={{ marginTop: 20 }}>{t('availability')}</h3>
       <label>
         <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} />
-        {' '}I am currently available for jobs
+        {' '}{t('available_for_jobs')}
       </label>
 
-      <h3 style={{ marginTop: 20 }}>Location</h3>
+      <h3 style={{ marginTop: 20 }}>{t('location')}</h3>
       <p>{locationSet ? '✅ Location is set' : "⚠️ Not set yet — you won't appear in customer matches until you set this"}</p>
-      <button type="button" onClick={updateLocation}>📍 Update My Current Location</button>
+      <button type="button" onClick={updateLocation}>📍 {t('update_location')}</button>
 
       <div style={{ marginTop: 24 }}>
-        <button onClick={saveProfile}>Save Profile</button>
+        <button onClick={saveProfile}>{t('save_profile')}</button>
       </div>
 
       {statusMsg && <p style={{ marginTop: 10 }}>{statusMsg}</p>}
@@ -114,9 +115,8 @@ export default function WorkerProfileSetup() {
       {!verified && (
         <p style={{ marginTop: 24, fontSize: 13, color: '#555', background: '#fff3e0', padding: 10, borderRadius: 6 }}>
           <b>Note for testing (Phase 2–3):</b> you won't show up in customer matches until
-          an admin verifies you — the real approval screen is built in Phase 4. For now,
-          ask a teammate to open Supabase → Table Editor → <code>worker_profiles</code> →
-          find your row → set <code>verified</code> to <code>true</code>.
+          an admin verifies you. As of Phase 4, this now happens from the real{' '}
+          <b>Admin Dashboard → Verifications</b> tab — no more manually editing Supabase!
         </p>
       )}
     </div>

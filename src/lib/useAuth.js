@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
+import i18n from '../i18n'
 
 // A simple hook that gives any component the current logged-in user
 // (or null) plus their role from the "users" table, and keeps it updated
@@ -39,6 +40,14 @@ export function useAuth() {
 
     if (error) console.error('[useAuth] Failed to fetch profile:', error.message)
     setProfile(data ?? null)
+
+    // If this user has a saved language preference that differs from
+    // what's currently active, switch to it automatically - this is
+    // what makes language "follow" a user across devices/browsers.
+    if (data?.language_pref && data.language_pref !== i18n.language) {
+      i18n.changeLanguage(data.language_pref)
+    }
+
     setLoading(false)
   }
 

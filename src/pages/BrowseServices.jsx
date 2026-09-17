@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function BrowseServices() {
   const { t } = useTranslation()
@@ -24,14 +25,17 @@ export default function BrowseServices() {
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         <h1>{t('welcome')}, {profile?.full_name} 👋</h1>
-        <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <LanguageSwitcher />
+          <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+        </div>
       </div>
 
-      <Link to="/customer/bookings">📋 My Bookings →</Link>
+      <Link to="/customer/bookings">📋 {t('my_bookings')} →</Link>
 
-      <h2 style={{ marginTop: 30 }}>Browse Services</h2>
+      <h2 style={{ marginTop: 30 }}>{t('browse_services')}</h2>
       {loading && <p>{t('loading')}</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {services.map((s) => (
@@ -49,10 +53,10 @@ export default function BrowseServices() {
           >
             <div>
               <b>{s.name}</b>
-              <div style={{ fontSize: 13, color: '#666' }}>₹{s.base_price} onwards</div>
+              <div style={{ fontSize: 13, color: '#666' }}>₹{s.base_price} {t('onwards')}</div>
             </div>
             <Link to={`/customer/book/${s.id}`}>
-              <button>Book</button>
+              <button>{t('book')}</button>
             </Link>
           </li>
         ))}

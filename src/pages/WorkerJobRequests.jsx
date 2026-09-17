@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 const SEARCH_RADIUS_METERS = 8000 // 8km
 
@@ -55,8 +56,6 @@ export default function WorkerJobRequests() {
 
   async function acceptJob(bookingId) {
     setStatusMsg('Accepting...')
-    // Conditional update (worker_id must still be null) prevents two
-    // workers from both grabbing the same job in a race condition.
     const { data, error } = await supabase
       .from('bookings')
       .update({ worker_id: user.id, status: 'accepted' })
@@ -83,44 +82,47 @@ export default function WorkerJobRequests() {
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         <h1>{t('welcome')}, {profile?.full_name} 🔧</h1>
-        <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <LanguageSwitcher />
+          <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+        </div>
       </div>
-      <Link to="/worker/profile">My Profile &amp; Skills →</Link>
+      <Link to="/worker/profile">{t('my_profile_title')} →</Link>
 
       {statusMsg && <p style={{ marginTop: 10 }}>{statusMsg}</p>}
 
       {!workerProfile?.lat && (
         <p style={{ background: '#fff3e0', padding: 10, borderRadius: 6, marginTop: 16 }}>
-          Set your skills and location in <Link to="/worker/profile">My Profile</Link> to start seeing job requests.
+          Set your skills and location in <Link to="/worker/profile">{t('my_profile_title')}</Link> to start seeing job requests.
         </p>
       )}
 
-      <h2 style={{ marginTop: 24 }}>New Requests Near You</h2>
-      {nearbyJobs.length === 0 && <p style={{ color: '#666' }}>No matching requests nearby right now.</p>}
+      <h2 style={{ marginTop: 24 }}>{t('new_requests_near_you')}</h2>
+      {nearbyJobs.length === 0 && <p style={{ color: '#666' }}>{t('no_requests_nearby')}</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {nearbyJobs.map((job) => (
           <li key={job.booking_id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, marginBottom: 8 }}>
             <b>{job.service_name}</b>{job.is_emergency && ' 🚨 Emergency'}
             <div style={{ fontSize: 13, color: '#666' }}>{(job.distance_meters / 1000).toFixed(1)} km away</div>
-            <button onClick={() => acceptJob(job.booking_id)} style={{ marginTop: 6 }}>Accept Job</button>
+            <button onClick={() => acceptJob(job.booking_id)} style={{ marginTop: 6 }}>{t('accept_job')}</button>
           </li>
         ))}
       </ul>
 
-      <h2 style={{ marginTop: 24 }}>My Active Jobs</h2>
-      {activeJobs.length === 0 && <p style={{ color: '#666' }}>No active jobs.</p>}
+      <h2 style={{ marginTop: 24 }}>{t('my_active_jobs')}</h2>
+      {activeJobs.length === 0 && <p style={{ color: '#666' }}>{t('no_active_jobs')}</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {activeJobs.map((job) => (
           <li key={job.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, marginBottom: 8 }}>
             <b>{job.services?.name}</b> — status: <b>{job.status}</b>
             <div style={{ marginTop: 6 }}>
               {job.status === 'accepted' && (
-                <button onClick={() => advanceStatus(job.id, 'in_progress')}>Start Job</button>
+                <button onClick={() => advanceStatus(job.id, 'in_progress')}>{t('start_job')}</button>
               )}
               {job.status === 'in_progress' && (
-                <button onClick={() => advanceStatus(job.id, 'completed')}>Mark Completed</button>
+                <button onClick={() => advanceStatus(job.id, 'completed')}>{t('mark_completed')}</button>
               )}
             </div>
           </li>

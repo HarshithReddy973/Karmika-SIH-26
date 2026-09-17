@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 
@@ -12,6 +13,7 @@ const STATUS_COLORS = {
 }
 
 export default function MyBookings() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -32,11 +34,11 @@ export default function MyBookings() {
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <Link to="/customer">← Back to Browse Services</Link>
-      <h2>My Bookings</h2>
+      <Link to="/customer">← {t('back_to_browse')}</Link>
+      <h2>{t('my_bookings')}</h2>
 
-      {loading && <p>Loading...</p>}
-      {!loading && bookings.length === 0 && <p>No bookings yet — go book your first service!</p>}
+      {loading && <p>{t('loading')}</p>}
+      {!loading && bookings.length === 0 && <p>{t('no_bookings_yet')}</p>}
 
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {bookings.map((b) => (

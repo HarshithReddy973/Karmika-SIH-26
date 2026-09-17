@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 
 const STEPS = ['pending', 'accepted', 'in_progress', 'completed']
@@ -12,6 +13,7 @@ const STEP_LABELS = {
 
 export default function BookingTracker() {
   const { bookingId } = useParams()
+  const { t } = useTranslation()
   const [booking, setBooking] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -26,8 +28,6 @@ export default function BookingTracker() {
         else setBooking(data)
       })
 
-    // Real-time: this is the "no refresh needed" magic from the pipeline
-    // doc - Supabase pushes the update the instant a worker changes status.
     const channel = supabase
       .channel(`booking-tracker-${bookingId}`)
       .on(
@@ -41,15 +41,15 @@ export default function BookingTracker() {
   }, [bookingId])
 
   if (errorMsg) return <p style={{ color: 'red', padding: 20 }}>{errorMsg}</p>
-  if (!booking) return <p style={{ padding: 20 }}>Loading booking...</p>
+  if (!booking) return <p style={{ padding: 20 }}>{t('loading')}</p>
 
   const currentIndex = STEPS.indexOf(booking.status)
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <Link to="/customer/bookings">← Back to My Bookings</Link>
+      <Link to="/customer/bookings">← {t('back_to_bookings')}</Link>
       <h2>{booking.services?.name}</h2>
-      <p>Worker: <b>{booking.worker?.full_name || 'Not yet assigned — waiting for a worker to accept'}</b></p>
+      <p>{t('worker_label')}: <b>{booking.worker?.full_name || t('not_yet_assigned')}</b></p>
 
       <div style={{ display: 'flex', gap: 6, margin: '20px 0', flexWrap: 'wrap' }}>
         {STEPS.map((step, i) => (
@@ -73,10 +73,7 @@ export default function BookingTracker() {
         )}
       </div>
 
-      <p style={{ fontSize: 13, color: '#666' }}>
-        This page updates live — try changing the status from the Worker app in another
-        browser tab/window and watch it update here instantly with no refresh.
-      </p>
+      <p style={{ fontSize: 13, color: '#666' }}>{t('live_update_note')}</p>
     </div>
   )
 }

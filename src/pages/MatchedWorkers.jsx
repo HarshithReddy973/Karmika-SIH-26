@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { rankWorkers } from '../lib/matchingScore'
 
@@ -8,14 +9,13 @@ const SEARCH_RADIUS_METERS = 8000 // 8km
 export default function MatchedWorkers() {
   const { bookingId } = useParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [workers, setWorkers] = useState([])
   const [loading, setLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
     async function load() {
-      // Re-fetch the booking (rather than passing data through navigation
-      // state) so this page works correctly even on a page refresh.
       const { data: booking, error: bErr } = await supabase
         .from('bookings')
         .select('*, services(category, name)')
@@ -41,9 +41,9 @@ export default function MatchedWorkers() {
 
   return (
     <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <h2>Matched Workers Near You</h2>
+      <h2>{t('matched_workers_title')}</h2>
 
-      {loading && <p>Searching within {SEARCH_RADIUS_METERS / 1000}km using the geo-matching engine...</p>}
+      {loading && <p>{t('searching_workers')}</p>}
       {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
 
       {!loading && workers.length === 0 && (
@@ -80,7 +80,7 @@ export default function MatchedWorkers() {
       )}
 
       <button onClick={() => navigate(`/customer/bookings/${bookingId}`)} style={{ marginTop: 10 }}>
-        Track This Booking →
+        {t('track_this_booking')} →
       </button>
     </div>
   )
