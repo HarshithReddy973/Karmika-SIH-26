@@ -2,6 +2,6 @@ node_modules
 dist
 .env
 .env.local
-README.md
-.DS_Store
 PHASE_4_5_NOTES.md
+PHASE_6_7_NOTES.md
+.DS_Store

@@ -57,5 +57,20 @@
   "tab_bookings": "सभी बुकिंग",
   "tab_services": "सेवाएं और मूल्य",
   "tab_forecast": "मांग पूर्वानुमान",
-  "tab_welfare": "कल्याण कोष"
+  "tab_welfare": "कल्याण कोष",
+
+  "payment_summary_title": "भुगतान सारांश",
+  "service_cost": "सेवा शुल्क",
+  "platform_fee": "प्लेटफ़ॉर्म शुल्क",
+  "worker_payout": "कामगार भुगतान",
+  "pay_now": "अभी भुगतान करें",
+  "processing_payment": "भुगतान प्रक्रिया में है...",
+  "payment_success_msg": "भुगतान सफल! कर्मिका के माध्यम से बुकिंग के लिए धन्यवाद।",
+  "proceed_to_payment": "भुगतान के लिए आगे बढ़ें",
+  "paid_label": "भुगतान हो गया",
+
+  "welfare_balance": "कल्याण कोष शेष",
+  "e_shram_number": "ई-श्रम कार्ड नंबर (वैकल्पिक)",
+  "insurance_registered": "बीमा स्थिति: पंजीकृत",
+  "insurance_not_registered": "बीमा पंजीकरण स्थिति दिखाने के लिए अपना ई-श्रम नंबर जोड़ें"
 }

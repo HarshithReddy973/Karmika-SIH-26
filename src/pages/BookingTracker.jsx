@@ -3,12 +3,13 @@ import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 
-const STEPS = ['pending', 'accepted', 'in_progress', 'completed']
+const STEPS = ['pending', 'accepted', 'in_progress', 'completed', 'confirmed']
 const STEP_LABELS = {
   pending: 'Pending',
   accepted: 'Accepted',
   in_progress: 'In Progress',
   completed: 'Completed',
+  confirmed: 'Paid',
 }
 
 export default function BookingTracker() {
@@ -73,7 +74,20 @@ export default function BookingTracker() {
         )}
       </div>
 
-      <p style={{ fontSize: 13, color: '#666' }}>{t('live_update_note')}</p>
+      {booking.status === 'completed' && (
+        <Link to={`/customer/bookings/${bookingId}/payment`}>
+          <button style={{ width: '100%', padding: 10 }}>{t('proceed_to_payment')} →</button>
+        </Link>
+      )}
+
+      {booking.status === 'confirmed' && (
+        <div style={{ background: '#e8f5e9', padding: 10, borderRadius: 6 }}>
+          ✅ {t('paid_label')} —{' '}
+          <Link to={`/customer/bookings/${bookingId}/payment`}>view receipt</Link>
+        </div>
+      )}
+
+      <p style={{ fontSize: 13, color: '#666', marginTop: 16 }}>{t('live_update_note')}</p>
     </div>
   )
 }

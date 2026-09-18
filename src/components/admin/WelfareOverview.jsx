@@ -25,9 +25,10 @@ export default function WelfareOverview() {
     <div>
       <h3>Worker Welfare Fund</h3>
       <p style={{ fontSize: 13, color: '#666' }}>
-        Auto-accumulates a small contribution per completed job. This table starts
-        filling in once Phase 7 wires up automatic contributions on job completion — for
-        now it reflects whatever is already in the <code>welfare_contributions</code> table.
+        Auto-accumulates a small contribution every time a customer pays for a completed
+        job (Phase 6's Payment Summary screen writes to this automatically). Numbers here
+        will start showing up as soon as your team completes a full booking → payment
+        cycle in testing.
       </p>
 
       <h2>₹{total.toFixed(2)}</h2>

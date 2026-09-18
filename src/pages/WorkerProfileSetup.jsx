@@ -13,6 +13,8 @@ export default function WorkerProfileSetup() {
   const [isAvailable, setIsAvailable] = useState(true)
   const [locationSet, setLocationSet] = useState(false)
   const [verified, setVerified] = useState(false)
+  const [eShramNumber, setEShramNumber] = useState('')
+  const [welfareBalance, setWelfareBalance] = useState(0)
   const [statusMsg, setStatusMsg] = useState('')
 
   useEffect(() => {
@@ -28,7 +30,18 @@ export default function WorkerProfileSetup() {
           setIsAvailable(data.is_available)
           setLocationSet(!!data.lat)
           setVerified(data.verified)
+          setEShramNumber(data.e_shram_number || '')
         }
+      })
+
+    // Phase 7: pull this worker's running welfare fund total.
+    supabase
+      .from('welfare_contributions')
+      .select('amount')
+      .eq('worker_id', user.id)
+      .then(({ data }) => {
+        const total = (data || []).reduce((sum, r) => sum + Number(r.amount), 0)
+        setWelfareBalance(total)
       })
   }, [user])
 
@@ -40,7 +53,7 @@ export default function WorkerProfileSetup() {
     setStatusMsg('Saving...')
     const { error } = await supabase
       .from('worker_profiles')
-      .upsert({ user_id: user.id, skills, is_available: isAvailable })
+      .upsert({ user_id: user.id, skills, is_available: isAvailable, e_shram_number: eShramNumber || null })
     setStatusMsg(error ? error.message : '✅ Saved!')
   }
 
@@ -88,6 +101,15 @@ export default function WorkerProfileSetup() {
         )}
       </p>
 
+      <div style={{ background: '#f5f5f5', borderRadius: 8, padding: 14, marginBottom: 20 }}>
+        <div style={{ fontSize: 13, color: '#666' }}>{t('welfare_balance')}</div>
+        <div style={{ fontSize: 24, fontWeight: 'bold' }}>₹{welfareBalance.toFixed(2)}</div>
+        <p style={{ fontSize: 11, color: '#999', margin: '4px 0 0' }}>
+          A small contribution is added automatically every time a customer pays for one
+          of your completed jobs.
+        </p>
+      </div>
+
       <h3>{t('my_skills')}</h3>
       {ALL_SKILLS.map((skill) => (
         <label key={skill} style={{ display: 'block', marginBottom: 4 }}>
@@ -106,6 +128,22 @@ export default function WorkerProfileSetup() {
       <p>{locationSet ? '✅ Location is set' : "⚠️ Not set yet — you won't appear in customer matches until you set this"}</p>
       <button type="button" onClick={updateLocation}>📍 {t('update_location')}</button>
 
+      <h3 style={{ marginTop: 20 }}>{t('e_shram_number')}</h3>
+      <input
+        type="text"
+        placeholder="e.g. 12-3456-7890123"
+        value={eShramNumber}
+        onChange={(e) => setEShramNumber(e.target.value)}
+        style={{ width: '100%', padding: 6 }}
+      />
+      <p style={{ fontSize: 12, marginTop: 6 }}>
+        {eShramNumber ? (
+          <span style={{ color: 'green' }}>✅ {t('insurance_registered')}</span>
+        ) : (
+          <span style={{ color: '#999' }}>{t('insurance_not_registered')}</span>
+        )}
+      </p>
+
       <div style={{ marginTop: 24 }}>
         <button onClick={saveProfile}>{t('save_profile')}</button>
       </div>
@@ -114,9 +152,8 @@ export default function WorkerProfileSetup() {
 
       {!verified && (
         <p style={{ marginTop: 24, fontSize: 13, color: '#555', background: '#fff3e0', padding: 10, borderRadius: 6 }}>
-          <b>Note for testing (Phase 2–3):</b> you won't show up in customer matches until
-          an admin verifies you. As of Phase 4, this now happens from the real{' '}
-          <b>Admin Dashboard → Verifications</b> tab — no more manually editing Supabase!
+          You won't show up in customer matches until an admin verifies you — approval
+          happens from the <b>Admin Dashboard → Verifications</b> tab.
         </p>
       )}
     </div>

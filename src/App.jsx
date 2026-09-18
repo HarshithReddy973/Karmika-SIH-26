@@ -6,6 +6,7 @@ import BookService from './pages/BookService'
 import MatchedWorkers from './pages/MatchedWorkers'
 import MyBookings from './pages/MyBookings'
 import BookingTracker from './pages/BookingTracker'
+import PaymentSummary from './pages/PaymentSummary'
 import WorkerJobRequests from './pages/WorkerJobRequests'
 import WorkerProfileSetup from './pages/WorkerProfileSetup'
 import AdminDashboard from './pages/AdminDashboard'
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/customer/matches/:bookingId" element={<ProtectedRoute allowedRole="customer"><MatchedWorkers /></ProtectedRoute>} />
         <Route path="/customer/bookings" element={<ProtectedRoute allowedRole="customer"><MyBookings /></ProtectedRoute>} />
         <Route path="/customer/bookings/:bookingId" element={<ProtectedRoute allowedRole="customer"><BookingTracker /></ProtectedRoute>} />
+        <Route path="/customer/bookings/:bookingId/payment" element={<ProtectedRoute allowedRole="customer"><PaymentSummary /></ProtectedRoute>} />
 
         {/* Worker routes - Phase 2 */}
         <Route path="/worker" element={<ProtectedRoute allowedRole="worker"><WorkerJobRequests /></ProtectedRoute>} />

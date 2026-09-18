@@ -57,5 +57,20 @@
   "tab_bookings": "All Bookings",
   "tab_services": "Services & Pricing",
   "tab_forecast": "Demand Forecast",
-  "tab_welfare": "Welfare Fund"
+  "tab_welfare": "Welfare Fund",
+
+  "payment_summary_title": "Payment Summary",
+  "service_cost": "Service Cost",
+  "platform_fee": "Platform Fee",
+  "worker_payout": "Worker Payout",
+  "pay_now": "Pay Now",
+  "processing_payment": "Processing payment...",
+  "payment_success_msg": "Payment successful! Thank you for booking through Karmika.",
+  "proceed_to_payment": "Proceed to Payment",
+  "paid_label": "Paid",
+
+  "welfare_balance": "Welfare Fund Balance",
+  "e_shram_number": "e-Shram Card Number (optional)",
+  "insurance_registered": "Insurance status: Registered",
+  "insurance_not_registered": "Add your e-Shram number to show insurance registration status"
 }
