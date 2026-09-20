@@ -72,5 +72,21 @@
   "welfare_balance": "Welfare Fund Balance",
   "e_shram_number": "e-Shram Card Number (optional)",
   "insurance_registered": "Insurance status: Registered",
-  "insurance_not_registered": "Add your e-Shram number to show insurance registration status"
+  "insurance_not_registered": "Add your e-Shram number to show insurance registration status",
+
+  "view_location": "View location",
+  "scheduled_for": "Scheduled for",
+  "requested_at": "Requested",
+  "booked_at": "Booked",
+  "accepted_at_label": "Accepted",
+  "customer_label": "Customer",
+  "cannot_start_job_msg": "Finish your current in-progress job before starting another one.",
+  "complete_job_confirm_title": "Confirm Job Completion",
+  "confirm_completion": "Confirm Job Completion",
+  "expected_payout": "Your expected payout",
+
+  "rate_this_service": "Rate This Service",
+  "comment_label": "Leave a comment (optional)",
+  "submit_review": "Submit Review",
+  "thank_you_review_msg": "Thanks for your feedback!"
 }

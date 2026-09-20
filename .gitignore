@@ -4,4 +4,6 @@ dist
 .env.local
 PHASE_4_5_NOTES.md
 PHASE_6_7_NOTES.md
+WORKER_UX_FIXES_NOTES.md
+PHASE_8_DEMO_PREP.md
 .DS_Store

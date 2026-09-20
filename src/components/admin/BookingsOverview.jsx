@@ -42,7 +42,8 @@ export default function BookingsOverview() {
               <th style={{ padding: '4px 8px' }}>Customer</th>
               <th style={{ padding: '4px 8px' }}>Worker</th>
               <th style={{ padding: '4px 8px' }}>Status</th>
-              <th style={{ padding: '4px 8px' }}>Created</th>
+              <th style={{ padding: '4px 8px' }}>Booked</th>
+              <th style={{ padding: '4px 8px' }}>Accepted</th>
             </tr>
           </thead>
           <tbody>
@@ -53,6 +54,7 @@ export default function BookingsOverview() {
                 <td style={{ padding: '4px 8px' }}>{b.worker?.full_name || '—'}</td>
                 <td style={{ padding: '4px 8px' }}>{b.status}</td>
                 <td style={{ padding: '4px 8px' }}>{new Date(b.created_at).toLocaleDateString()}</td>
+                <td style={{ padding: '4px 8px' }}>{b.accepted_at ? new Date(b.accepted_at).toLocaleDateString() : '—'}</td>
               </tr>
             ))}
           </tbody>

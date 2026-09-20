@@ -82,8 +82,9 @@ export default function BookingTracker() {
 
       {booking.status === 'confirmed' && (
         <div style={{ background: '#e8f5e9', padding: 10, borderRadius: 6 }}>
-          ✅ {t('paid_label')} —{' '}
-          <Link to={`/customer/bookings/${bookingId}/payment`}>view receipt</Link>
+          ✅ {t('paid_label')} — <Link to={`/customer/bookings/${bookingId}/payment`}>view receipt</Link>
+          {' · '}
+          <Link to={`/customer/bookings/${bookingId}/review`}>{t('rate_this_service')}</Link>
         </div>
       )}
 

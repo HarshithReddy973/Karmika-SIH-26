@@ -72,5 +72,21 @@
   "welfare_balance": "कल्याण कोष शेष",
   "e_shram_number": "ई-श्रम कार्ड नंबर (वैकल्पिक)",
   "insurance_registered": "बीमा स्थिति: पंजीकृत",
-  "insurance_not_registered": "बीमा पंजीकरण स्थिति दिखाने के लिए अपना ई-श्रम नंबर जोड़ें"
+  "insurance_not_registered": "बीमा पंजीकरण स्थिति दिखाने के लिए अपना ई-श्रम नंबर जोड़ें",
+
+  "view_location": "स्थान देखें",
+  "scheduled_for": "निर्धारित समय",
+  "requested_at": "अनुरोध किया गया",
+  "booked_at": "बुक किया गया",
+  "accepted_at_label": "स्वीकार किया गया",
+  "customer_label": "ग्राहक",
+  "cannot_start_job_msg": "दूसरा काम शुरू करने से पहले अपना चालू काम पूरा करें।",
+  "complete_job_confirm_title": "काम पूर्णता की पुष्टि करें",
+  "confirm_completion": "काम पूर्णता की पुष्टि करें",
+  "expected_payout": "आपका अनुमानित भुगतान",
+
+  "rate_this_service": "इस सेवा को रेट करें",
+  "comment_label": "टिप्पणी लिखें (वैकल्पिक)",
+  "submit_review": "समीक्षा सबमिट करें",
+  "thank_you_review_msg": "आपकी प्रतिक्रिया के लिए धन्यवाद!"
 }
