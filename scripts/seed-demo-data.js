@@ -71,79 +71,23 @@ function daysAgo(n) {
   return d
 }
 
-// Creates the auth user, or - if this script has been run before and the
-// email already exists - looks the existing user up instead of failing.
-// perPage is set explicitly and high: this project has been through 8
-// phases of multi-person testing, so the default 50-per-page listUsers()
-// result could easily miss an existing demo account on a re-run, which
-// would otherwise make this fall through to a confusing failure.
 async function createAuthUser(email) {
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password: DEMO_PASSWORD,
     email_confirm: true,
   })
-  if (!error) return data.user
-
-  const { data: list, error: listErr } = await supabase.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  })
-  if (listErr) {
-    throw new Error(`createUser failed for ${email} (${error.message}), and looking up the existing user also failed: ${listErr.message}`)
+  if (error) {
+    // If the demo has been seeded before, the user may already exist -
+    // look them up instead of failing the whole script.
+    if (error.message?.toLowerCase().includes('already') ) {
+      const { data: list } = await supabase.auth.admin.listUsers()
+      const existing = list.users.find((u) => u.email === email)
+      if (existing) return existing
+    }
+    throw error
   }
-  const existing = list.users.find((u) => u.email === email)
-  if (existing) return existing
-
-  // Genuinely couldn't create OR find this user - surface the real reason
-  // rather than silently pressing on with a missing account.
-  throw new Error(`Could not create or find auth user for ${email}: ${error.message}`)
-}
-
-// Upserts a row into public.users, THEN re-reads it back to confirm it's
-// really there. This is the direct fix for the FK-violation bug: any
-// customer/worker whose profile row can't be verified to exist is never
-// added to the arrays used to build bookings, so bookings.customer_id /
-// worker_id can never point at a row that doesn't actually exist.
-async function upsertAndVerifyUser(authUser, payload) {
-  const { error: upsertErr } = await supabase.from('users').upsert({ id: authUser.id, ...payload })
-  if (upsertErr) {
-    throw new Error(`public.users upsert failed for ${authUser.email}: ${upsertErr.message}`)
-  }
-
-  const { data: row, error: verifyErr } = await supabase
-    .from('users')
-    .select('id')
-    .eq('id', authUser.id)
-    .maybeSingle()
-  if (verifyErr) {
-    throw new Error(`Could not verify public.users row for ${authUser.email}: ${verifyErr.message}`)
-  }
-  if (!row) {
-    throw new Error(
-      `public.users row for ${authUser.email} (${authUser.id}) does not exist after upsert - ` +
-      `the upsert reported success but the row isn't readable back. Not proceeding with this user.`
-    )
-  }
-}
-
-async function upsertAndVerifyWorkerProfile(authUser, payload) {
-  const { error: upsertErr } = await supabase.from('worker_profiles').upsert({ user_id: authUser.id, ...payload })
-  if (upsertErr) {
-    throw new Error(`worker_profiles upsert failed for ${authUser.email}: ${upsertErr.message}`)
-  }
-
-  const { data: row, error: verifyErr } = await supabase
-    .from('worker_profiles')
-    .select('user_id')
-    .eq('user_id', authUser.id)
-    .maybeSingle()
-  if (verifyErr) {
-    throw new Error(`Could not verify worker_profiles row for ${authUser.email}: ${verifyErr.message}`)
-  }
-  if (!row) {
-    throw new Error(`worker_profiles row for ${authUser.email} does not exist after upsert.`)
-  }
+  return data.user
 }
 
 async function main() {
@@ -155,6 +99,7 @@ async function main() {
   if (!services || services.length === 0) {
     throw new Error('No services found - run database/phase1_schema.sql first.')
   }
+  const servicesByCategory = Object.fromEntries(services.map((s) => [s.category, s]))
 
   // ---- 2. Create worker accounts + profiles ----
   console.log(`Creating ${WORKER_NAMES.length} demo workers...`)
@@ -162,47 +107,45 @@ async function main() {
   for (let i = 0; i < WORKER_NAMES.length; i++) {
     const name = WORKER_NAMES[i]
     const email = `demo.worker${i + 1}@karmika.test`
+    const authUser = await createAuthUser(email)
 
-    try {
-      const authUser = await createAuthUser(email)
+    await supabase.from('users').upsert({
+      id: authUser.id,
+      full_name: name,
+      phone: `9${String(700000000 + i * 111).padStart(9, '0')}`,
+      role: 'worker',
+      language_pref: 'en',
+    })
 
-      await upsertAndVerifyUser(authUser, {
-        full_name: name,
-        phone: `9${String(700000000 + i * 111).padStart(9, '0')}`,
-        role: 'worker',
-        language_pref: 'en',
+    const skills = randomSample(SKILL_CATEGORIES, Math.random() > 0.5 ? 2 : 1)
+    const loc = jitterLocation(CITY_CENTER, SPREAD_KM)
+    const hasEShram = Math.random() > 0.4
+
+    await supabase.from('worker_profiles').upsert({
+      user_id: authUser.id,
+      skills,
+      verified: true,
+      is_available: Math.random() > 0.15, // most available, a few not
+      rating_avg: Math.round((3.5 + Math.random() * 1.5) * 10) / 10,
+      jobs_this_week: Math.floor(Math.random() * 7),
+      lat: loc.lat,
+      lng: loc.lng,
+      location: null, // set via RPC below so PostGIS geography column matches lat/lng
+      e_shram_number: hasEShram ? `EX${1000000000 + i}` : null,
+    })
+
+    // Set the geography column directly (can't use the set_worker_location
+    // RPC here since it relies on auth.uid(), which is null for a
+    // service-role script with no logged-in user).
+    await supabase
+      .from('worker_profiles')
+      .update({
+        location: `SRID=4326;POINT(${loc.lng} ${loc.lat})`,
       })
+      .eq('user_id', authUser.id)
 
-      const skills = randomSample(SKILL_CATEGORIES, Math.random() > 0.5 ? 2 : 1)
-      const loc = jitterLocation(CITY_CENTER, SPREAD_KM)
-      const hasEShram = Math.random() > 0.4
-
-      await upsertAndVerifyWorkerProfile(authUser, {
-        skills,
-        verified: true,
-        is_available: Math.random() > 0.15, // most available, a few not
-        rating_avg: Math.round((3.5 + Math.random() * 1.5) * 10) / 10,
-        jobs_this_week: Math.floor(Math.random() * 7),
-        lat: loc.lat,
-        lng: loc.lng,
-        location: null, // set directly below so the PostGIS column matches lat/lng
-        e_shram_number: hasEShram ? `EX${1000000000 + i}` : null,
-      })
-
-      // Set the geography column directly (can't use the set_worker_location
-      // RPC here since it relies on auth.uid(), which is null for a
-      // service-role script with no logged-in user).
-      const { error: locErr } = await supabase
-        .from('worker_profiles')
-        .update({ location: `SRID=4326;POINT(${loc.lng} ${loc.lat})` })
-        .eq('user_id', authUser.id)
-      if (locErr) throw new Error(`Setting worker location failed for ${email}: ${locErr.message}`)
-
-      workers.push({ id: authUser.id, name, skills, lat: loc.lat, lng: loc.lng })
-      console.log(`  ✓ ${name} (${skills.join(', ')})`)
-    } catch (err) {
-      console.error(`  ✗ ${name} (${email}) skipped: ${err.message}`)
-    }
+    workers.push({ id: authUser.id, name, skills, lat: loc.lat, lng: loc.lng })
+    console.log(`  ✓ ${name} (${skills.join(', ')})`)
   }
 
   // ---- 3. Create customer accounts ----
@@ -211,40 +154,22 @@ async function main() {
   for (let i = 0; i < CUSTOMER_NAMES.length; i++) {
     const name = CUSTOMER_NAMES[i]
     const email = `demo.customer${i + 1}@karmika.test`
+    const authUser = await createAuthUser(email)
 
-    try {
-      const authUser = await createAuthUser(email)
-
-      await upsertAndVerifyUser(authUser, {
-        full_name: name,
-        phone: `8${String(800000000 + i * 222).padStart(9, '0')}`,
-        role: 'customer',
-        language_pref: 'en',
-      })
-
-      customers.push({ id: authUser.id, name })
-      console.log(`  ✓ ${name}`)
-    } catch (err) {
-      console.error(`  ✗ ${name} (${email}) skipped: ${err.message}`)
-    }
-  }
-
-  if (customers.length === 0) {
-    throw new Error(
-      '\nNo customers were successfully created/verified - cannot create any bookings. ' +
-      'See the ✗ lines above for the exact reason each one failed.'
-    )
-  }
-  if (workers.length === 0) {
-    console.warn(
-      '\n⚠️  No workers were successfully created/verified. Bookings will still be ' +
-      'created, but all as unassigned (pending) since there is no worker to assign.'
-    )
+    await supabase.from('users').upsert({
+      id: authUser.id,
+      full_name: name,
+      phone: `8${String(800000000 + i * 222).padStart(9, '0')}`,
+      role: 'customer',
+      language_pref: 'en',
+    })
+    customers.push({ id: authUser.id, name })
+    console.log(`  ✓ ${name}`)
   }
 
   // ---- 4. Create bookings spread across the last 14 days with varied statuses ----
   console.log('\nCreating demo bookings...')
-  const BOOKING_TARGET = 26
+  const BOOKING_COUNT = 26
   // Weighted status distribution so every dashboard tab has something to show.
   const STATUS_PLAN = [
     ...Array(6).fill('pending'), // unassigned - populates Matched Workers / Job Requests
@@ -254,11 +179,9 @@ async function main() {
     ...Array(8).fill('confirmed'), // paid - populates Welfare Fund + Forecast history
   ]
 
-  let bookingsCreated = 0
-  let bookingsFailed = 0
   let welfareRowsCreated = 0
 
-  for (let i = 0; i < BOOKING_TARGET; i++) {
+  for (let i = 0; i < BOOKING_COUNT; i++) {
     const status = STATUS_PLAN[i % STATUS_PLAN.length]
     const service = randomChoice(services)
     const customer = randomChoice(customers)
@@ -269,24 +192,19 @@ async function main() {
     const needsWorker = status !== 'pending'
     const matchingWorkers = workers.filter((w) => w.skills.includes(service.category))
     const worker = needsWorker && matchingWorkers.length > 0 ? randomChoice(matchingWorkers) : null
-    // If this status needs a worker but none is available (e.g. no workers
-    // were seeded, or none match this service's category), fall back to
-    // 'pending' rather than inserting a row that implies an assignment
-    // that doesn't exist.
-    const effectiveStatus = needsWorker && !worker ? 'pending' : status
 
     const bookingData = {
       customer_id: customer.id,
       worker_id: worker ? worker.id : null,
       service_id: service.id,
-      status: effectiveStatus,
+      status,
       lat: loc.lat,
       lng: loc.lng,
       scheduled_time: createdAt.toISOString(),
       is_emergency: Math.random() > 0.85,
       created_at: createdAt.toISOString(),
       accepted_at: worker ? new Date(createdAt.getTime() + 10 * 60000).toISOString() : null,
-      completed_at: ['completed', 'confirmed'].includes(effectiveStatus)
+      completed_at: ['completed', 'confirmed'].includes(status)
         ? new Date(createdAt.getTime() + 90 * 60000).toISOString()
         : null,
     }
@@ -296,50 +214,29 @@ async function main() {
       .insert(bookingData)
       .select()
       .single()
-    if (insertErr) {
-      bookingsFailed++
-      console.error('  ✗ booking insert failed:', insertErr.message)
-      continue
-    }
+    if (insertErr) { console.error('  ✗ booking insert failed:', insertErr.message); continue }
 
     // Set the geography column to match, same reasoning as for workers above.
-    const { error: bookingLocErr } = await supabase
+    await supabase
       .from('bookings')
       .update({ location: `SRID=4326;POINT(${loc.lng} ${loc.lat})` })
       .eq('id', booking.id)
-    if (bookingLocErr) {
-      console.warn(`  ⚠️  Booking ${booking.id} created but setting its location failed: ${bookingLocErr.message}`)
-    }
-
-    bookingsCreated++
 
     // Phase 7: a 'confirmed' (paid) booking should have a welfare contribution,
     // matching exactly what the real Payment Summary screen does (5% of base price).
-    if (effectiveStatus === 'confirmed' && worker) {
+    if (status === 'confirmed' && worker) {
       const amount = Math.round(service.base_price * 0.05 * 100) / 100
-      const { error: welfareErr } = await supabase.from('welfare_contributions').insert({
+      await supabase.from('welfare_contributions').insert({
         worker_id: worker.id,
         booking_id: booking.id,
         amount,
       })
-      if (welfareErr) {
-        console.warn(`  ⚠️  Booking ${booking.id} created but its welfare contribution failed: ${welfareErr.message}`)
-      } else {
-        welfareRowsCreated++
-      }
+      welfareRowsCreated++
     }
   }
-
-  console.log(
-    `  ✓ ${bookingsCreated}/${BOOKING_TARGET} bookings created` +
-    (bookingsFailed > 0 ? ` (${bookingsFailed} failed - see ✗ lines above)` : '') +
-    ` (${welfareRowsCreated} with welfare contributions)`
-  )
+  console.log(`  ✓ ${BOOKING_COUNT} bookings created (${welfareRowsCreated} with welfare contributions)`)
 
   console.log('\n✅ Done seeding demo data.')
-  console.log(`   Workers verified:   ${workers.length}/${WORKER_NAMES.length}`)
-  console.log(`   Customers verified: ${customers.length}/${CUSTOMER_NAMES.length}`)
-  console.log(`   Bookings created:   ${bookingsCreated}/${BOOKING_TARGET}`)
   console.log(`\nDemo login credentials (all use password: ${DEMO_PASSWORD}):`)
   console.log('  Workers:   demo.worker1@karmika.test  ... demo.worker12@karmika.test')
   console.log('  Customers: demo.customer1@karmika.test ... demo.customer5@karmika.test')

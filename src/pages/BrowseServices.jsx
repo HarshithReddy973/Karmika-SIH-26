@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import AppHeader from '../components/ui/AppHeader'
+import { EmptyState, LoadingRow } from '../components/ui/Feedback'
 
 export default function BrowseServices() {
   const { t } = useTranslation()
@@ -24,43 +26,38 @@ export default function BrowseServices() {
   }, [])
 
   return (
-    <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-        <h1>{t('welcome')}, {profile?.full_name} 👋</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <LanguageSwitcher />
-          <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+    <>
+      <AppHeader>
+        <LanguageSwitcher />
+        <button className="btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+      </AppHeader>
+
+      <div className="page">
+        <div className="page-header">
+          <h1 className="page-title">{t('browse_services')}</h1>
+          <p className="page-subtitle">{t('welcome')}, {profile?.full_name} 👋</p>
+        </div>
+
+        <Link to="/customer/bookings" className="eyebrow-link">📋 {t('my_bookings')} →</Link>
+
+        {loading && <LoadingRow>{t('loading')}</LoadingRow>}
+
+        {!loading && services.length === 0 && <EmptyState>No services available yet.</EmptyState>}
+
+        <div className="stack">
+          {services.map((s) => (
+            <div key={s.id} className="card card-hover row">
+              <div>
+                <div style={{ fontWeight: 600 }}>{s.name}</div>
+                <div className="list-meta">₹{s.base_price} {t('onwards')}</div>
+              </div>
+              <Link to={`/customer/book/${s.id}`}>
+                <button className="btn-primary btn-sm">{t('book')}</button>
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
-
-      <Link to="/customer/bookings">📋 {t('my_bookings')} →</Link>
-
-      <h2 style={{ marginTop: 30 }}>{t('browse_services')}</h2>
-      {loading && <p>{t('loading')}</p>}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {services.map((s) => (
-          <li
-            key={s.id}
-            style={{
-              border: '1px solid #ddd',
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 10,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <b>{s.name}</b>
-              <div style={{ fontSize: 13, color: '#666' }}>₹{s.base_price} {t('onwards')}</div>
-            </div>
-            <Link to={`/customer/book/${s.id}`}>
-              <button>{t('book')}</button>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+    </>
   )
 }

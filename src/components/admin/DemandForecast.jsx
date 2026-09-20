@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabaseClient'
 import { buildDailyCounts, movingAverageForecast } from '../../lib/forecast'
+import { LoadingRow } from '../ui/Feedback'
 
 export default function DemandForecast() {
   const [categories, setCategories] = useState([])
@@ -42,43 +43,45 @@ export default function DemandForecast() {
     load()
   }, [selected])
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <LoadingRow>Loading...</LoadingRow>
 
   return (
     <div>
-      <h3>Demand Forecast</h3>
-      <p style={{ fontSize: 13, color: '#666' }}>
+      <h3 style={{ marginBottom: 8 }}>Demand Forecast</h3>
+      <p className="helper-text" style={{ marginBottom: 12 }}>
         A weighted moving-average forecast based on real booking history — deliberately
         simple and fully explainable rather than a heavy ML model, per the agreed
         prototype approach. Accuracy improves as more real bookings come in.
       </p>
 
-      <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+      <select value={selected} onChange={(e) => setSelected(e.target.value)} style={{ width: 'auto' }}>
         {categories.map((c) => (
           <option key={c} value={c}>{c}</option>
         ))}
       </select>
 
-      <div style={{ width: '100%', height: 250, marginTop: 12 }}>
-        <ResponsiveContainer>
-          <BarChart data={dailyCounts}>
-            <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#42a5f5" name="Bookings" />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="card" style={{ marginTop: 12, padding: '16px 8px 8px' }}>
+        <div style={{ width: '100%', height: 240 }}>
+          <ResponsiveContainer>
+            <BarChart data={dailyCounts}>
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="var(--color-text-muted)" />
+              <YAxis allowDecimals={false} stroke="var(--color-text-muted)" />
+              <Tooltip />
+              <Bar dataKey="count" fill="#0D9488" name="Bookings" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      <h4 style={{ marginTop: 20 }}>Predicted demand — next 5 days</h4>
+      <div className="section-title" style={{ marginTop: 20 }}>Predicted demand — next 5 days</div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         {forecast.map((f, i) => (
-          <div key={i} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, textAlign: 'center', minWidth: 70 }}>
-            <div style={{ fontSize: 12, color: '#666' }}>Day +{i + 1}</div>
-            <div style={{ fontSize: 18, fontWeight: 'bold' }}>{f}</div>
+          <div key={i} className="card" style={{ textAlign: 'center', minWidth: 74 }}>
+            <div className="list-meta">Day +{i + 1}</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>{f}</div>
           </div>
         ))}
-        {forecast.length === 0 && <p style={{ color: '#666' }}>Not enough data yet for this category.</p>}
+        {forecast.length === 0 && <p className="helper-text">Not enough data yet for this category.</p>}
       </div>
     </div>
   )

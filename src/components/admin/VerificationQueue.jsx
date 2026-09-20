@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { EmptyState, LoadingRow } from '../ui/Feedback'
 
 // This is the real replacement for "manually flip verified=true in
 // Supabase's Table Editor" that we used as a Phase 2-3 stand-in.
@@ -36,29 +37,28 @@ export default function VerificationQueue() {
     load()
   }
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <LoadingRow>Loading...</LoadingRow>
 
   return (
     <div>
-      <h3>Pending Worker Verifications</h3>
-      {msg && <p style={{ color: 'red' }}>{msg}</p>}
-      {pending.length === 0 && <p style={{ color: '#666' }}>No pending verifications right now.</p>}
+      <h3 style={{ marginBottom: 12 }}>Pending Worker Verifications</h3>
+      {msg && <div className="alert alert-danger" style={{ marginBottom: 12 }}>{msg}</div>}
+      {pending.length === 0 && <EmptyState>No pending verifications right now.</EmptyState>}
 
-      {pending.map((wp) => (
-        <div key={wp.user_id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, marginBottom: 8 }}>
-          <b>{wp.users?.full_name}</b> — {wp.users?.phone || 'no phone on file'}
-          <div style={{ fontSize: 13, color: '#666' }}>
-            Skills: {(wp.skills || []).join(', ') || 'None set yet'}
+      <div className="stack">
+        {pending.map((wp) => (
+          <div key={wp.user_id} className="card">
+            <div style={{ fontWeight: 600 }}>{wp.users?.full_name}</div>
+            <div className="list-meta">{wp.users?.phone || 'no phone on file'}</div>
+            <div className="list-meta">Skills: {(wp.skills || []).join(', ') || 'None set yet'}</div>
+            <div className="list-meta">Location: {wp.lat ? '✅ set' : '⚠️ not set yet'}</div>
+            <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+              <button className="btn-primary btn-sm" onClick={() => approve(wp.user_id)}>✅ Approve</button>
+              <button className="btn-danger btn-sm" onClick={() => reject(wp.user_id)}>❌ Reject</button>
+            </div>
           </div>
-          <div style={{ fontSize: 13, color: '#666' }}>
-            Location: {wp.lat ? '✅ set' : '⚠️ not set yet'}
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <button onClick={() => approve(wp.user_id)}>✅ Approve</button>{' '}
-            <button onClick={() => reject(wp.user_id)}>❌ Reject</button>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

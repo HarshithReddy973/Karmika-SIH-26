@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 import { mapLink, formatDateTime } from '../lib/jobDisplay'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import AppHeader from '../components/ui/AppHeader'
+import { EmptyState } from '../components/ui/Feedback'
 
 const SEARCH_RADIUS_METERS = 8000 // 8km
 
@@ -121,99 +123,106 @@ export default function WorkerJobRequests() {
   const hasInProgressJob = myJobs.some((j) => j.status === 'in_progress')
 
   return (
-    <div style={{ maxWidth: 560, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-        <h1>{t('welcome')}, {profile?.full_name} 🔧</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <LanguageSwitcher />
-          <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+    <>
+      <AppHeader>
+        <LanguageSwitcher />
+        <button className="btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+      </AppHeader>
+
+      <div className="page">
+        <div className="page-header">
+          <h1 className="page-title">{t('new_requests_near_you')}</h1>
+          <p className="page-subtitle">{t('welcome')}, {profile?.full_name} 🔧</p>
+        </div>
+
+        <Link to="/worker/profile" className="eyebrow-link">{t('my_profile_title')} →</Link>
+
+        {statusMsg && <div className="alert alert-info" style={{ marginTop: 12 }}>{statusMsg}</div>}
+
+        {!workerProfile?.lat && (
+          <div className="alert alert-warning" style={{ marginTop: 16 }}>
+            Set your skills and location in <Link to="/worker/profile">{t('my_profile_title')}</Link> to start seeing job requests.
+          </div>
+        )}
+
+        <div className="section-title" style={{ marginTop: 24 }}>{t('new_requests_near_you')}</div>
+        {nearbyJobs.length === 0 && <EmptyState>{t('no_requests_nearby')}</EmptyState>}
+        <div className="stack">
+          {nearbyJobs.map((job) => (
+            <div key={job.booking_id} className="card">
+              <div className="card-title-row">
+                <div style={{ fontWeight: 600 }}>{job.service_name}</div>
+                {job.is_emergency && <span className="badge badge-danger">Emergency</span>}
+              </div>
+              <div className="list-meta">{(job.distance_meters / 1000).toFixed(1)} km away</div>
+              <div className="list-meta">
+                {t('scheduled_for')}: {job.is_emergency ? 'ASAP' : formatDateTime(job.scheduled_time)}
+              </div>
+              <div className="list-meta">{t('requested_at')}: {formatDateTime(job.created_at)}</div>
+              {mapLink(job.lat, job.lng) && (
+                <a href={mapLink(job.lat, job.lng)} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
+                  📍 {t('view_location')}
+                </a>
+              )}
+              <div style={{ marginTop: 10 }}>
+                <button className="btn-primary btn-sm" onClick={() => acceptJob(job.booking_id)} disabled={busyJobId === job.booking_id}>
+                  {t('accept_job')}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="section-title" style={{ marginTop: 28 }}>{t('my_active_jobs')}</div>
+        {activeJobs.length === 0 && <EmptyState>{t('no_active_jobs')}</EmptyState>}
+        <div className="stack">
+          {activeJobs.map((job) => (
+            <div key={job.id} className="card">
+              <div className="card-title-row">
+                <div style={{ fontWeight: 600 }}>{job.services?.name}</div>
+                <span className="badge badge-neutral">{job.status.replace('_', ' ')}</span>
+              </div>
+              <div className="list-meta">{t('customer_label')}: {job.customer?.full_name || '—'}</div>
+              <div className="list-meta">
+                {t('scheduled_for')}: {job.is_emergency ? 'ASAP' : formatDateTime(job.scheduled_time)}
+              </div>
+              <div className="list-meta">{t('booked_at')}: {formatDateTime(job.created_at)}</div>
+              {job.accepted_at && (
+                <div className="list-meta">{t('accepted_at_label')}: {formatDateTime(job.accepted_at)}</div>
+              )}
+              {mapLink(job.lat, job.lng) && (
+                <a href={mapLink(job.lat, job.lng)} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
+                  📍 {t('view_location')}
+                </a>
+              )}
+
+              <div style={{ marginTop: 10 }}>
+                {job.status === 'accepted' && (
+                  <>
+                    <button
+                      className="btn-primary btn-sm"
+                      onClick={() => startJob(job.id)}
+                      disabled={busyJobId === job.id || (hasInProgressJob && job.status !== 'in_progress')}
+                    >
+                      {t('start_job')}
+                    </button>
+                    {hasInProgressJob && (
+                      <p className="helper-text" style={{ color: 'var(--color-warning-text)', marginTop: 6 }}>
+                        {t('cannot_start_job_msg')}
+                      </p>
+                    )}
+                  </>
+                )}
+                {job.status === 'in_progress' && (
+                  <Link to={`/worker/job/${job.id}/complete`}>
+                    <button className="btn-primary btn-sm">{t('mark_completed')}</button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-      <Link to="/worker/profile">{t('my_profile_title')} →</Link>
-
-      {statusMsg && <p style={{ marginTop: 10 }}>{statusMsg}</p>}
-
-      {!workerProfile?.lat && (
-        <p style={{ background: '#fff3e0', padding: 10, borderRadius: 6, marginTop: 16 }}>
-          Set your skills and location in <Link to="/worker/profile">{t('my_profile_title')}</Link> to start seeing job requests.
-        </p>
-      )}
-
-      <h2 style={{ marginTop: 24 }}>{t('new_requests_near_you')}</h2>
-      {nearbyJobs.length === 0 && <p style={{ color: '#666' }}>{t('no_requests_nearby')}</p>}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {nearbyJobs.map((job) => (
-          <li key={job.booking_id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, marginBottom: 8 }}>
-            <b>{job.service_name}</b>{job.is_emergency && ' 🚨 Emergency'}
-            <div style={{ fontSize: 13, color: '#666' }}>{(job.distance_meters / 1000).toFixed(1)} km away</div>
-            <div style={{ fontSize: 13, color: '#666' }}>
-              {t('scheduled_for')}: {job.is_emergency ? 'ASAP' : formatDateTime(job.scheduled_time)}
-            </div>
-            <div style={{ fontSize: 13, color: '#666' }}>
-              {t('requested_at')}: {formatDateTime(job.created_at)}
-            </div>
-            {mapLink(job.lat, job.lng) && (
-              <a href={mapLink(job.lat, job.lng)} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
-                📍 {t('view_location')}
-              </a>
-            )}
-            <div style={{ marginTop: 6 }}>
-              <button onClick={() => acceptJob(job.booking_id)} disabled={busyJobId === job.booking_id}>
-                {t('accept_job')}
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <h2 style={{ marginTop: 24 }}>{t('my_active_jobs')}</h2>
-      {activeJobs.length === 0 && <p style={{ color: '#666' }}>{t('no_active_jobs')}</p>}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {activeJobs.map((job) => (
-          <li key={job.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, marginBottom: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <b>{job.services?.name}</b>
-              <span style={{ fontSize: 12, color: '#666' }}>{job.status}</span>
-            </div>
-            <div style={{ fontSize: 13, color: '#666' }}>
-              {t('customer_label')}: {job.customer?.full_name || '—'}
-            </div>
-            <div style={{ fontSize: 13, color: '#666' }}>
-              {t('scheduled_for')}: {job.is_emergency ? 'ASAP' : formatDateTime(job.scheduled_time)}
-            </div>
-            <div style={{ fontSize: 13, color: '#666' }}>{t('booked_at')}: {formatDateTime(job.created_at)}</div>
-            {job.accepted_at && (
-              <div style={{ fontSize: 13, color: '#666' }}>{t('accepted_at_label')}: {formatDateTime(job.accepted_at)}</div>
-            )}
-            {mapLink(job.lat, job.lng) && (
-              <a href={mapLink(job.lat, job.lng)} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
-                📍 {t('view_location')}
-              </a>
-            )}
-
-            <div style={{ marginTop: 8 }}>
-              {job.status === 'accepted' && (
-                <>
-                  <button
-                    onClick={() => startJob(job.id)}
-                    disabled={busyJobId === job.id || (hasInProgressJob && job.status !== 'in_progress')}
-                  >
-                    {t('start_job')}
-                  </button>
-                  {hasInProgressJob && (
-                    <p style={{ fontSize: 12, color: '#e65100', marginTop: 4 }}>{t('cannot_start_job_msg')}</p>
-                  )}
-                </>
-              )}
-              {job.status === 'in_progress' && (
-                <Link to={`/worker/job/${job.id}/complete`}>
-                  <button>{t('mark_completed')}</button>
-                </Link>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    </>
   )
 }

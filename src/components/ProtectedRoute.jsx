@@ -6,7 +6,7 @@ import { useAuth } from '../lib/useAuth'
 export default function ProtectedRoute({ children, allowedRole }) {
   const { isLoggedIn, profile, loading } = useAuth()
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <div className="page"><div className="loading-row"><span className="spinner" /><span>Loading...</span></div></div>
   if (!isLoggedIn) return <Navigate to="/login" replace />
   if (allowedRole && profile?.role !== allowedRole) return <Navigate to="/" replace />
 

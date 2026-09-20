@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 import MapPicker from '../components/MapPicker'
+import { LoadingRow } from '../components/ui/Feedback'
 
 export default function BookService() {
   const { serviceId } = useParams()
@@ -104,49 +105,62 @@ export default function BookService() {
     }
   }
 
-  if (!service) return <p style={{ padding: 20 }}>{errorMsg || t('loading')}</p>
+  if (!service) {
+    return (
+      <div className="page">
+        {errorMsg ? <div className="alert alert-danger">{errorMsg}</div> : <LoadingRow>{t('loading')}</LoadingRow>}
+      </div>
+    )
+  }
 
   return (
-    <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <h2>{t('book')}: {service.name}</h2>
-      <p style={{ color: '#666' }}>₹{service.base_price} {t('onwards')}</p>
+    <div className="page">
+      <Link to="/customer" className="eyebrow-link">← {t('browse_services')}</Link>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <input
-            type="checkbox"
-            checked={isEmergency}
-            onChange={(e) => setIsEmergency(e.target.checked)}
-          />
-          🚨 {t('emergency_option')}
-        </label>
+      <div className="page-header">
+        <h1 className="page-title">{t('book')}: {service.name}</h1>
+        <p className="page-subtitle">₹{service.base_price} {t('onwards')}</p>
+      </div>
 
-        {!isEmergency && (
-          <label>
-            {t('preferred_datetime')}
+      <form onSubmit={handleSubmit} className="stack">
+        <div className="card stack-sm">
+          <label className="checkbox-row">
             <input
-              type="datetime-local"
-              value={scheduledTime}
-              onChange={(e) => setScheduledTime(e.target.value)}
-              required={!isEmergency}
-              style={{ display: 'block', marginTop: 4 }}
+              type="checkbox"
+              checked={isEmergency}
+              onChange={(e) => setIsEmergency(e.target.checked)}
             />
+            🚨 {t('emergency_option')}
           </label>
-        )}
 
-        <div>
-          <button type="button" onClick={useMyLocation} disabled={gettingLocation}>
-            {gettingLocation ? t('getting_location') : `📍 ${t('use_my_location')}`}
-          </button>
-          <p style={{ fontSize: 13, color: '#666', margin: '8px 0' }}>
-            {t('tap_map_instructions')}
-          </p>
-          <MapPicker lat={lat} lng={lng} onChange={(la, ln) => { setLat(la); setLng(ln) }} />
+          {!isEmergency && (
+            <div className="field">
+              <label className="label" htmlFor="scheduledTime">{t('preferred_datetime')}</label>
+              <input
+                id="scheduledTime"
+                type="datetime-local"
+                value={scheduledTime}
+                onChange={(e) => setScheduledTime(e.target.value)}
+                required={!isEmergency}
+              />
+            </div>
+          )}
         </div>
 
-        {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
+        <div className="card stack-sm">
+          <div className="section-title">{t('location')}</div>
+          <button type="button" className="btn-outline btn-sm" onClick={useMyLocation} disabled={gettingLocation}>
+            {gettingLocation ? t('getting_location') : `📍 ${t('use_my_location')}`}
+          </button>
+          <p className="helper-text">{t('tap_map_instructions')}</p>
+          <div className="map-frame">
+            <MapPicker lat={lat} lng={lng} onChange={(la, ln) => { setLat(la); setLng(ln) }} />
+          </div>
+        </div>
 
-        <button type="submit" disabled={submitting}>
+        {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
+
+        <button type="submit" className="btn-primary btn-block btn-lg" disabled={submitting}>
           {submitting ? t('loading') : `${t('find_nearby_workers')} →`}
         </button>
       </form>

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 import { computeBreakdown } from '../lib/payment'
 import { mapLink, formatDateTime } from '../lib/jobDisplay'
+import { LoadingRow } from '../components/ui/Feedback'
 
 export default function WorkerJobCompletion() {
   const { bookingId } = useParams()
@@ -55,59 +56,62 @@ export default function WorkerJobCompletion() {
     }
   }
 
-  if (errorMsg && !booking) return <p style={{ color: 'red', padding: 20 }}>{errorMsg}</p>
-  if (!booking) return <p style={{ padding: 20 }}>{t('loading')}</p>
+  if (errorMsg && !booking) return <div className="page"><div className="alert alert-danger">{errorMsg}</div></div>
+  if (!booking) return <div className="page"><LoadingRow>{t('loading')}</LoadingRow></div>
 
   const alreadyPastInProgress = !['in_progress'].includes(booking.status) && !done
   const payout = computeBreakdown(booking.services.base_price).workerPayout
 
   return (
-    <div style={{ maxWidth: 480, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <Link to="/worker">← {t('my_active_jobs')}</Link>
-      <h2>{t('complete_job_confirm_title')}</h2>
+    <div className="page page-narrow">
+      <Link to="/worker" className="eyebrow-link">← {t('my_active_jobs')}</Link>
 
-      <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16 }}>
-        <b>{booking.services.name}</b>
-        <div style={{ fontSize: 13, color: '#666', marginTop: 6 }}>
+      <div className="page-header">
+        <h1 className="page-title">{t('complete_job_confirm_title')}</h1>
+      </div>
+
+      <div className="card">
+        <div style={{ fontWeight: 600 }}>{booking.services.name}</div>
+        <div className="list-meta" style={{ marginTop: 6 }}>
           {t('customer_label')}: {booking.customer?.full_name || '—'}
           {booking.customer?.phone ? ` (${booking.customer.phone})` : ''}
         </div>
-        <div style={{ fontSize: 13, color: '#666' }}>
+        <div className="list-meta">
           {t('scheduled_for')}: {booking.is_emergency ? 'ASAP' : formatDateTime(booking.scheduled_time)}
         </div>
-        <div style={{ fontSize: 13, color: '#666' }}>{t('booked_at')}: {formatDateTime(booking.created_at)}</div>
+        <div className="list-meta">{t('booked_at')}: {formatDateTime(booking.created_at)}</div>
         {booking.accepted_at && (
-          <div style={{ fontSize: 13, color: '#666' }}>{t('accepted_at_label')}: {formatDateTime(booking.accepted_at)}</div>
+          <div className="list-meta">{t('accepted_at_label')}: {formatDateTime(booking.accepted_at)}</div>
         )}
         {mapLink(booking.lat, booking.lng) && (
           <a href={mapLink(booking.lat, booking.lng)} target="_blank" rel="noreferrer" style={{ fontSize: 13 }}>
             📍 {t('view_location')}
           </a>
         )}
-        <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '10px 0' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+        <hr />
+        <div className="row" style={{ fontWeight: 700 }}>
           <span>{t('expected_payout')}</span>
           <span>₹{payout}</span>
         </div>
-        <p style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+        <p className="helper-text" style={{ marginTop: 4 }}>
           Final amount is confirmed once the customer pays on their end.
         </p>
       </div>
 
-      {errorMsg && <p style={{ color: 'red', marginTop: 10 }}>{errorMsg}</p>}
+      {errorMsg && <div className="alert alert-danger" style={{ marginTop: 12 }}>{errorMsg}</div>}
 
       {done ? (
         <div style={{ marginTop: 20, textAlign: 'center' }}>
           <div style={{ fontSize: 44 }}>✅</div>
-          <p>Job marked as completed. The customer has been notified to proceed with payment.</p>
-          <button onClick={() => navigate('/worker')}>{t('my_active_jobs')}</button>
+          <p style={{ marginBottom: 14 }}>Job marked as completed. The customer has been notified to proceed with payment.</p>
+          <button className="btn-outline" onClick={() => navigate('/worker')}>{t('my_active_jobs')}</button>
         </div>
       ) : alreadyPastInProgress ? (
-        <p style={{ marginTop: 16, color: '#666' }}>
+        <p className="helper-text" style={{ marginTop: 16 }}>
           This job is already in status <b>{booking.status}</b> — nothing to confirm here.
         </p>
       ) : (
-        <button onClick={confirmCompletion} disabled={confirming} style={{ marginTop: 16, width: '100%', padding: 12, fontSize: 15 }}>
+        <button onClick={confirmCompletion} disabled={confirming} className="btn-primary btn-block btn-lg" style={{ marginTop: 16 }}>
           {confirming ? t('loading') : `✅ ${t('confirm_completion')}`}
         </button>
       )}

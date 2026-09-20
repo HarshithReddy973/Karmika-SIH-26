@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import StatusBadge from '../ui/StatusBadge'
+import { EmptyState, LoadingRow } from '../ui/Feedback'
 
 export default function BookingsOverview() {
   const [bookings, setBookings] = useState([])
@@ -22,46 +24,50 @@ export default function BookingsOverview() {
 
   return (
     <div>
-      <h3>All Bookings</h3>
-      <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-        <option value="all">All statuses</option>
-        <option value="pending">Pending</option>
-        <option value="accepted">Accepted</option>
-        <option value="in_progress">In Progress</option>
-        <option value="completed">Completed</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
-
-      {loading && <p>Loading...</p>}
-
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', marginTop: 10, borderCollapse: 'collapse', fontSize: 14 }}>
-          <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>
-              <th style={{ padding: '4px 8px' }}>Service</th>
-              <th style={{ padding: '4px 8px' }}>Customer</th>
-              <th style={{ padding: '4px 8px' }}>Worker</th>
-              <th style={{ padding: '4px 8px' }}>Status</th>
-              <th style={{ padding: '4px 8px' }}>Booked</th>
-              <th style={{ padding: '4px 8px' }}>Accepted</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((b) => (
-              <tr key={b.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '4px 8px' }}>{b.services?.name}</td>
-                <td style={{ padding: '4px 8px' }}>{b.customer?.full_name}</td>
-                <td style={{ padding: '4px 8px' }}>{b.worker?.full_name || '—'}</td>
-                <td style={{ padding: '4px 8px' }}>{b.status}</td>
-                <td style={{ padding: '4px 8px' }}>{new Date(b.created_at).toLocaleDateString()}</td>
-                <td style={{ padding: '4px 8px' }}>{b.accepted_at ? new Date(b.accepted_at).toLocaleDateString() : '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="row" style={{ marginBottom: 12 }}>
+        <h3>All Bookings</h3>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ width: 'auto' }}>
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
       </div>
 
-      {filtered.length === 0 && !loading && <p style={{ color: '#666' }}>No bookings match this filter.</p>}
+      {loading && <LoadingRow>Loading...</LoadingRow>}
+
+      {!loading && filtered.length > 0 && (
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Customer</th>
+                <th>Worker</th>
+                <th>Status</th>
+                <th>Booked</th>
+                <th>Accepted</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((b) => (
+                <tr key={b.id}>
+                  <td>{b.services?.name}</td>
+                  <td>{b.customer?.full_name}</td>
+                  <td>{b.worker?.full_name || '—'}</td>
+                  <td><StatusBadge status={b.status} /></td>
+                  <td>{new Date(b.created_at).toLocaleDateString()}</td>
+                  <td>{b.accepted_at ? new Date(b.accepted_at).toLocaleDateString() : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {filtered.length === 0 && !loading && <EmptyState>No bookings match this filter.</EmptyState>}
     </div>
   )
 }

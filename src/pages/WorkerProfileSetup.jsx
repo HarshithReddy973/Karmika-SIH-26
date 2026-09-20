@@ -89,72 +89,85 @@ export default function WorkerProfileSetup() {
   }
 
   return (
-    <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <Link to="/worker">← {t('new_requests_near_you')}</Link>
-      <h2>{t('my_profile_title')}</h2>
+    <div className="page">
+      <Link to="/worker" className="eyebrow-link">← {t('new_requests_near_you')}</Link>
 
-      <p>
-        {verified ? (
-          <b style={{ color: 'green' }}>✅ Verified</b>
-        ) : (
-          <b style={{ color: '#e65100' }}>⏳ Pending verification</b>
-        )}
-      </p>
+      <div className="page-header">
+        <h1 className="page-title">{t('my_profile_title')}</h1>
+        <p className="page-subtitle">
+          {verified ? (
+            <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>✅ Verified</span>
+          ) : (
+            <span style={{ color: 'var(--color-warning-text)', fontWeight: 600 }}>⏳ Pending verification</span>
+          )}
+        </p>
+      </div>
 
-      <div style={{ background: '#f5f5f5', borderRadius: 8, padding: 14, marginBottom: 20 }}>
-        <div style={{ fontSize: 13, color: '#666' }}>{t('welfare_balance')}</div>
-        <div style={{ fontSize: 24, fontWeight: 'bold' }}>₹{welfareBalance.toFixed(2)}</div>
-        <p style={{ fontSize: 11, color: '#999', margin: '4px 0 0' }}>
+      <div className="card" style={{ background: 'var(--color-primary-light)', borderColor: 'var(--color-primary)', marginBottom: 20 }}>
+        <div className="section-title" style={{ color: 'var(--color-primary)' }}>{t('welfare_balance')}</div>
+        <div style={{ fontSize: 26, fontWeight: 700 }}>₹{welfareBalance.toFixed(2)}</div>
+        <p className="helper-text" style={{ marginTop: 4 }}>
           A small contribution is added automatically every time a customer pays for one
           of your completed jobs.
         </p>
       </div>
 
-      <h3>{t('my_skills')}</h3>
-      {ALL_SKILLS.map((skill) => (
-        <label key={skill} style={{ display: 'block', marginBottom: 4 }}>
-          <input type="checkbox" checked={skills.includes(skill)} onChange={() => toggleSkill(skill)} />
-          {' '}{skill}
-        </label>
-      ))}
+      <div className="stack-lg">
+        <div className="card stack-sm">
+          <h3>{t('my_skills')}</h3>
+          {ALL_SKILLS.map((skill) => (
+            <label key={skill} className="checkbox-row">
+              <input type="checkbox" checked={skills.includes(skill)} onChange={() => toggleSkill(skill)} />
+              {skill}
+            </label>
+          ))}
+        </div>
 
-      <h3 style={{ marginTop: 20 }}>{t('availability')}</h3>
-      <label>
-        <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} />
-        {' '}{t('available_for_jobs')}
-      </label>
+        <div className="card stack-sm">
+          <h3>{t('availability')}</h3>
+          <label className="checkbox-row">
+            <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} />
+            {t('available_for_jobs')}
+          </label>
+        </div>
 
-      <h3 style={{ marginTop: 20 }}>{t('location')}</h3>
-      <p>{locationSet ? '✅ Location is set' : "⚠️ Not set yet — you won't appear in customer matches until you set this"}</p>
-      <button type="button" onClick={updateLocation}>📍 {t('update_location')}</button>
+        <div className="card stack-sm">
+          <h3>{t('location')}</h3>
+          <p className="helper-text">
+            {locationSet ? '✅ Location is set' : "⚠️ Not set yet — you won't appear in customer matches until you set this"}
+          </p>
+          <button type="button" className="btn-outline btn-sm" onClick={updateLocation}>📍 {t('update_location')}</button>
+        </div>
 
-      <h3 style={{ marginTop: 20 }}>{t('e_shram_number')}</h3>
-      <input
-        type="text"
-        placeholder="e.g. 12-3456-7890123"
-        value={eShramNumber}
-        onChange={(e) => setEShramNumber(e.target.value)}
-        style={{ width: '100%', padding: 6 }}
-      />
-      <p style={{ fontSize: 12, marginTop: 6 }}>
-        {eShramNumber ? (
-          <span style={{ color: 'green' }}>✅ {t('insurance_registered')}</span>
-        ) : (
-          <span style={{ color: '#999' }}>{t('insurance_not_registered')}</span>
-        )}
-      </p>
-
-      <div style={{ marginTop: 24 }}>
-        <button onClick={saveProfile}>{t('save_profile')}</button>
+        <div className="card stack-sm">
+          <h3>{t('e_shram_number')}</h3>
+          <input
+            type="text"
+            placeholder="e.g. 12-3456-7890123"
+            value={eShramNumber}
+            onChange={(e) => setEShramNumber(e.target.value)}
+          />
+          <p className="helper-text">
+            {eShramNumber ? (
+              <span style={{ color: 'var(--color-success-text)' }}>✅ {t('insurance_registered')}</span>
+            ) : (
+              <span>{t('insurance_not_registered')}</span>
+            )}
+          </p>
+        </div>
       </div>
 
-      {statusMsg && <p style={{ marginTop: 10 }}>{statusMsg}</p>}
+      <button className="btn-primary btn-block btn-lg" style={{ marginTop: 20 }} onClick={saveProfile}>
+        {t('save_profile')}
+      </button>
+
+      {statusMsg && <div className="alert alert-info" style={{ marginTop: 12 }}>{statusMsg}</div>}
 
       {!verified && (
-        <p style={{ marginTop: 24, fontSize: 13, color: '#555', background: '#fff3e0', padding: 10, borderRadius: 6 }}>
+        <div className="alert alert-warning" style={{ marginTop: 20 }}>
           You won't show up in customer matches until an admin verifies you — approval
           happens from the <b>Admin Dashboard → Verifications</b> tab.
-        </p>
+        </div>
       )}
     </div>
   )

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { rankWorkers } from '../lib/matchingScore'
+import { EmptyState, LoadingRow } from '../components/ui/Feedback'
 
 const SEARCH_RADIUS_METERS = 8000 // 8km
 
@@ -40,46 +41,49 @@ export default function MatchedWorkers() {
   }, [bookingId])
 
   return (
-    <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <h2>{t('matched_workers_title')}</h2>
+    <div className="page">
+      <div className="page-header">
+        <h1 className="page-title">{t('matched_workers_title')}</h1>
+      </div>
 
-      {loading && <p>{t('searching_workers')}</p>}
-      {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
+      {loading && <LoadingRow>{t('searching_workers')}</LoadingRow>}
+      {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
       {!loading && workers.length === 0 && (
-        <p>
+        <EmptyState>
           No verified workers matched yet within {SEARCH_RADIUS_METERS / 1000}km for this
           service. Your request is still posted — any nearby worker with this skill who
           gets verified can still pick it up from their Job Requests screen.
-        </p>
+        </EmptyState>
       )}
 
       {!loading && workers.length > 0 && (
         <>
-          <p style={{ fontSize: 13, color: '#666' }}>
+          <p className="helper-text" style={{ marginBottom: 12 }}>
             Ranked by distance, rating, and fair job-rotation (so the same top worker
             isn't always picked). Your request has been posted to all of them — whoever
             accepts first gets the job.
           </p>
-          <ol style={{ paddingLeft: 20 }}>
+          <div className="stack">
             {workers.map((w) => (
-              <li
-                key={w.worker_id}
-                style={{ border: '1px solid #ddd', borderRadius: 8, padding: 10, marginBottom: 8, listStyle: 'none' }}
-              >
-                <b>{w.full_name}</b>
-                <div style={{ fontSize: 13, color: '#666' }}>
+              <div key={w.worker_id} className="card">
+                <div style={{ fontWeight: 600 }}>{w.full_name}</div>
+                <div className="list-meta">
                   {(w.distance_meters / 1000).toFixed(1)} km away · rating{' '}
                   {w.rating_avg ? w.rating_avg.toFixed(1) : 'New worker'} · match score{' '}
                   {w.score.toFixed(2)}
                 </div>
-              </li>
+              </div>
             ))}
-          </ol>
+          </div>
         </>
       )}
 
-      <button onClick={() => navigate(`/customer/bookings/${bookingId}`)} style={{ marginTop: 10 }}>
+      <button
+        className="btn-primary btn-block btn-lg"
+        style={{ marginTop: 20 }}
+        onClick={() => navigate(`/customer/bookings/${bookingId}`)}
+      >
         {t('track_this_booking')} →
       </button>
     </div>

@@ -31,7 +31,7 @@ export default function MapPicker({ lat, lng, onChange, height = 300 }) {
   const center = hasPoint ? [lat, lng] : [20.5937, 78.9629] // fallback: center of India
 
   return (
-    <div style={{ height, width: '100%', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ height, width: '100%' }}>
       <MapContainer
         center={center}
         zoom={hasPoint ? 14 : 5}

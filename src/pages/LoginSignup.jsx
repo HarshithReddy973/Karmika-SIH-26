@@ -57,67 +57,90 @@ export default function LoginSignup() {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '60px auto', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <div className="auth-shell">
+      <div className="auth-topbar">
         <LanguageSwitcher />
       </div>
-      <h1>{t('app_name')}</h1>
-      <h2>{mode === 'login' ? t('login') : t('signup')}</h2>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {mode === 'signup' && (
-          <>
-            <input
-              placeholder={t('full_name')}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-            <input
-              placeholder={t('phone')}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
-            <label>
-              {t('i_am_a')}:{' '}
-              <select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="customer">{t('customer')}</option>
-                <option value="worker">{t('worker')}</option>
-              </select>
-            </label>
-          </>
-        )}
+      <div className="auth-card-wrap">
+        <div className="auth-card">
+          <div className="row-start" style={{ marginBottom: 4 }}>
+            <span className="brand-mark">K</span>
+            <h1 style={{ fontSize: 20 }}>{t('app_name')}</h1>
+          </div>
+          <p className="page-subtitle" style={{ marginBottom: 20 }}>
+            {mode === 'login' ? t('login') : t('signup')}
+          </p>
 
-        <input
-          type="email"
-          placeholder={t('email')}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder={t('password')}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-        />
+          <form onSubmit={handleSubmit} className="stack">
+            {mode === 'signup' && (
+              <>
+                <div className="field">
+                  <label className="label" htmlFor="fullName">{t('full_name')}</label>
+                  <input
+                    id="fullName"
+                    placeholder={t('full_name')}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="phone">{t('phone')}</label>
+                  <input
+                    id="phone"
+                    placeholder={t('phone')}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="role">{t('i_am_a')}</label>
+                  <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
+                    <option value="customer">{t('customer')}</option>
+                    <option value="worker">{t('worker')}</option>
+                  </select>
+                </div>
+              </>
+            )}
 
-        {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
+            <div className="field">
+              <label className="label" htmlFor="email">{t('email')}</label>
+              <input
+                id="email"
+                type="email"
+                placeholder={t('email')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="field">
+              <label className="label" htmlFor="password">{t('password')}</label>
+              <input
+                id="password"
+                type="password"
+                placeholder={t('password')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
 
-        <button type="submit" disabled={submitting}>
-          {submitting ? t('loading') : t('submit')}
-        </button>
-      </form>
+            {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
-      <p
-        style={{ cursor: 'pointer', color: 'blue', marginTop: 10 }}
-        onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-      >
-        {mode === 'login' ? t('need_account') : t('already_have_account')}
-      </p>
+            <button type="submit" className="btn-primary btn-block btn-lg" disabled={submitting}>
+              {submitting ? t('loading') : t('submit')}
+            </button>
+          </form>
+
+          <p className="auth-toggle" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
+            {mode === 'login' ? t('need_account') : t('already_have_account')}
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

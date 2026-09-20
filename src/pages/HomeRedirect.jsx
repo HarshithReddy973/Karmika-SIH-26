@@ -7,7 +7,7 @@ import { useAuth } from '../lib/useAuth'
 export default function HomeRedirect() {
   const { isLoggedIn, profile, loading } = useAuth()
 
-  if (loading) return <p>Loading...</p>
+  if (loading) return <div className="page"><div className="loading-row"><span className="spinner" /><span>Loading...</span></div></div>
   if (!isLoggedIn) return <Navigate to="/login" replace />
 
   if (profile?.role === 'worker') return <Navigate to="/worker" replace />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
+import { LoadingRow } from '../components/ui/Feedback'
 
 const STEPS = ['pending', 'accepted', 'in_progress', 'completed', 'confirmed']
 const STEP_LABELS = {
@@ -41,54 +42,51 @@ export default function BookingTracker() {
     return () => supabase.removeChannel(channel)
   }, [bookingId])
 
-  if (errorMsg) return <p style={{ color: 'red', padding: 20 }}>{errorMsg}</p>
-  if (!booking) return <p style={{ padding: 20 }}>{t('loading')}</p>
+  if (errorMsg) return <div className="page"><div className="alert alert-danger">{errorMsg}</div></div>
+  if (!booking) return <div className="page"><LoadingRow>{t('loading')}</LoadingRow></div>
 
   const currentIndex = STEPS.indexOf(booking.status)
 
   return (
-    <div style={{ maxWidth: 520, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <Link to="/customer/bookings">← {t('back_to_bookings')}</Link>
-      <h2>{booking.services?.name}</h2>
-      <p>{t('worker_label')}: <b>{booking.worker?.full_name || t('not_yet_assigned')}</b></p>
+    <div className="page">
+      <Link to="/customer/bookings" className="eyebrow-link">← {t('back_to_bookings')}</Link>
 
-      <div style={{ display: 'flex', gap: 6, margin: '20px 0', flexWrap: 'wrap' }}>
-        {STEPS.map((step, i) => (
-          <div
-            key={step}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 20,
-              fontSize: 13,
-              background: i <= currentIndex ? '#4caf50' : '#e0e0e0',
-              color: i <= currentIndex ? 'white' : '#555',
-            }}
-          >
-            {STEP_LABELS[step]}
-          </div>
-        ))}
-        {booking.status === 'cancelled' && (
-          <div style={{ padding: '8px 14px', borderRadius: 20, fontSize: 13, background: '#e53935', color: 'white' }}>
-            Cancelled
-          </div>
-        )}
+      <div className="page-header">
+        <h1 className="page-title">{booking.services?.name}</h1>
+        <p className="page-subtitle">
+          {t('worker_label')}: <b>{booking.worker?.full_name || t('not_yet_assigned')}</b>
+        </p>
+      </div>
+
+      <div className="card">
+        <div className="section-title">Status</div>
+        <div className="stepper">
+          {STEPS.map((step, i) => (
+            <span key={step} className={`step-pill ${i <= currentIndex ? 'done' : ''}`}>
+              {STEP_LABELS[step]}
+            </span>
+          ))}
+          {booking.status === 'cancelled' && <span className="step-pill cancelled">Cancelled</span>}
+        </div>
       </div>
 
       {booking.status === 'completed' && (
         <Link to={`/customer/bookings/${bookingId}/payment`}>
-          <button style={{ width: '100%', padding: 10 }}>{t('proceed_to_payment')} →</button>
+          <button className="btn-primary btn-block btn-lg" style={{ marginTop: 16 }}>
+            {t('proceed_to_payment')} →
+          </button>
         </Link>
       )}
 
       {booking.status === 'confirmed' && (
-        <div style={{ background: '#e8f5e9', padding: 10, borderRadius: 6 }}>
+        <div className="alert alert-success" style={{ marginTop: 16 }}>
           ✅ {t('paid_label')} — <Link to={`/customer/bookings/${bookingId}/payment`}>view receipt</Link>
           {' · '}
           <Link to={`/customer/bookings/${bookingId}/review`}>{t('rate_this_service')}</Link>
         </div>
       )}
 
-      <p style={{ fontSize: 13, color: '#666', marginTop: 16 }}>{t('live_update_note')}</p>
+      <p className="helper-text" style={{ marginTop: 16 }}>{t('live_update_note')}</p>
     </div>
   )
 }

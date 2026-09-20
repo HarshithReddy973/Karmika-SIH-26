@@ -24,7 +24,12 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <select value={i18n.language} onChange={(e) => changeLanguage(e.target.value)}>
+    <select
+      className="btn-sm"
+      style={{ width: 'auto', padding: '6px 10px', fontWeight: 500 }}
+      value={i18n.language}
+      onChange={(e) => changeLanguage(e.target.value)}
+    >
       {LANGUAGES.map((l) => (
         <option key={l.code} value={l.code}>
           {l.label}

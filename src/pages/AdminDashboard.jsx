@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/useAuth'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import AppHeader from '../components/ui/AppHeader'
 import VerificationQueue from '../components/admin/VerificationQueue'
 import BookingsOverview from '../components/admin/BookingsOverview'
 import ServicesManager from '../components/admin/ServicesManager'
@@ -23,40 +24,36 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState('verifications')
 
   return (
-    <div style={{ maxWidth: 820, margin: '30px auto', fontFamily: 'sans-serif', padding: '0 16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-        <h1>{t('admin_dashboard')} 🛠️</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <LanguageSwitcher />
-          <button onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+    <>
+      <AppHeader>
+        <LanguageSwitcher />
+        <button className="btn-ghost btn-sm" onClick={() => supabase.auth.signOut()}>{t('logout')}</button>
+      </AppHeader>
+
+      <div className="page page-wide">
+        <div className="page-header">
+          <h1 className="page-title">{t('admin_dashboard')}</h1>
+          <p className="page-subtitle">{t('welcome')}, {profile?.full_name}</p>
         </div>
-      </div>
-      <p>{t('welcome')}, {profile?.full_name}</p>
 
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '16px 0', borderBottom: '1px solid #ddd', paddingBottom: 8 }}>
-        {TABS.map((tb) => (
-          <button
-            key={tb.key}
-            onClick={() => setTab(tb.key)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: tab === tb.key ? 'bold' : 'normal',
-              textDecoration: tab === tb.key ? 'underline' : 'none',
-              fontSize: 14,
-            }}
-          >
-            {t(tb.labelKey)}
-          </button>
-        ))}
-      </div>
+        <div className="tabs">
+          {TABS.map((tb) => (
+            <button
+              key={tb.key}
+              onClick={() => setTab(tb.key)}
+              className={`tab-btn ${tab === tb.key ? 'active' : ''}`}
+            >
+              {t(tb.labelKey)}
+            </button>
+          ))}
+        </div>
 
-      {tab === 'verifications' && <VerificationQueue />}
-      {tab === 'bookings' && <BookingsOverview />}
-      {tab === 'services' && <ServicesManager />}
-      {tab === 'forecast' && <DemandForecast />}
-      {tab === 'welfare' && <WelfareOverview />}
-    </div>
+        {tab === 'verifications' && <VerificationQueue />}
+        {tab === 'bookings' && <BookingsOverview />}
+        {tab === 'services' && <ServicesManager />}
+        {tab === 'forecast' && <DemandForecast />}
+        {tab === 'welfare' && <WelfareOverview />}
+      </div>
+    </>
   )
 }
