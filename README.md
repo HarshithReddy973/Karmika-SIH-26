@@ -1,154 +1,379 @@
-# Coop Gig Services — Phase 0 & Phase 1 Starter
+# Karmika --- Cooperative Gig Services Platform
 
-This is the working starter project: Vite + React app, routing, i18n (English/Hindi),
-Supabase client wiring, auth-aware routing (customer/worker/admin), and the full
-Phase 1 database schema.
+Karmika is a cooperative gig-services platform designed to connect
+customers with verified local service workers such as electricians,
+plumbers, cleaners, carpenters, painters, and caregivers.
 
-## What's already done for you
-- Working React app scaffolded (Vite) with all Phase 1 packages installed
-- Login/Signup page wired to real Supabase Auth calls
-- Role-based routing (customer -> /customer, worker -> /worker, admin -> /admin)
-- `useAuth` hook that gives any page the logged-in user + role
-- Multilingual setup (English + Hindi) with a working translation system
-- Full SQL schema for all Phase 1 tables (`database/phase1_schema.sql`)
-- Verified the whole app builds with zero errors (`npm run build` passes)
+The platform focuses on transparent worker selection, location-based
+matching, fair job distribution, digital booking and payment workflows,
+multilingual support, and worker welfare.
 
-## What YOU need to do (step by step)
+## Core Features
 
-### Step 1 - Create your Supabase project (5 min)
-1. Go to https://supabase.com -> sign up (free, GitHub login is easiest) -> "New Project"
-2. Pick any name/region/password (save the DB password somewhere safe)
-3. Wait ~2 minutes for it to finish provisioning
+### Customer
 
-### Step 2 - Run the database schema (2 min)
-1. In your Supabase project, go to the **SQL Editor** tab (left sidebar)
-2. Click "New Query"
-3. Open `database/phase1_schema.sql` from this project, copy ALL of it, paste it in
-4. Click "Run" - you should see "Success. No rows returned"
-5. Go to the **Table Editor** tab - you should now see `users`, `services`,
-   `worker_profiles`, `bookings`, `ratings`, `welfare_contributions` tables,
-   and `services` should already have 6 sample rows in it
+-   Sign up / login
+-   Browse available services
+-   Create service bookings
+-   Select service location using the map
+-   Choose date/time or mark a request as an emergency
+-   Discover nearby verified workers
+-   View worker skills, ratings, and reviews
+-   Select a worker from matched candidates
+-   Track booking status
+-   View itemized payment summaries
+-   Mock digital payment flow
+-   Rate completed services
+-   English and Hindi language support
 
-### Step 3 - Turn off email confirmation (for hackathon speed) (1 min)
-1. In Supabase: **Authentication** -> **Providers** -> **Email**
-2. Turn OFF "Confirm email" (so signup logs someone in immediately -
-   much easier for demos and testing; you can turn it back on for
-   production later)
+### Worker
 
-### Step 4 - Connect your app to your Supabase project (2 min)
-1. In Supabase: **Project Settings** -> **API**
-2. Copy the "Project URL" and the "anon public" key
-3. In this project folder, run: `cp .env.example .env`
-4. Open `.env` and paste in your two values
+-   Worker registration and profile setup
+-   Skill-based profile
+-   Location registration
+-   Verification status
+-   Availability status
+-   Receive nearby job requests
+-   Accept jobs
+-   Update job status
+-   Add final charges including base price, parts, and extra labour
+-   View ratings and welfare information
 
-### Step 5 - Run it locally
+### Admin
+
+-   Admin dashboard
+-   Worker verification queue
+-   Booking overview
+-   Services management
+-   Worker welfare overview
+-   Demand forecasting
+-   Platform-level operational information
+-   Multilingual interface
+
+### Smart Matching
+
+Karmika uses location and skill information to identify suitable workers
+for a booking. The matching flow considers service/skill compatibility,
+verification, availability, geographic proximity, rating, and
+workload/fairness-related factors. PostGIS geography data is used for
+location-based matching.
+
+### Transparent Payments
+
+The payment workflow provides an itemized summary containing base
+service price, parts/material charges, additional labour charges, and
+total amount. The current payment implementation is a mock payment flow
+intended for demonstration.
+
+### Worker Welfare
+
+For confirmed/paid demo bookings, a welfare contribution is recorded as
+5% of the base service price.
+
+### Demand Forecasting
+
+The admin dashboard includes demand-forecasting functionality based on
+booking history, allowing the platform to visualize service demand
+trends.
+
+### Multilingual Support
+
+The application currently includes English and Hindi, with the
+translation structure allowing additional languages to be added.
+
+## Application Flow
+
+``` text
+Customer
+   ↓
+Browse Services
+   ↓
+Create Booking
+   ↓
+Location + Service Matching
+   ↓
+Nearby Verified Workers
+   ↓
+Worker Applications
+   ↓
+Customer Selects Worker
+   ↓
+Booking Accepted
+   ↓
+Worker Completes Job
+   ↓
+Itemized Charges
+   ↓
+Payment Summary
+   ↓
+Mock Payment
+   ├──→ 5% Welfare Contribution
+   ↓
+Customer Rating
+   ↓
+Worker Rating Updated
 ```
+
+## Technology Stack
+
+### Frontend
+
+-   React
+-   Vite
+-   JavaScript
+-   Leaflet / map-based location UI
+-   React component architecture
+-   i18n translation files
+
+### Backend / Database
+
+-   Supabase
+-   PostgreSQL
+-   Supabase Authentication
+-   PostGIS for geographic location/matching
+-   Supabase database security policies
+
+### Deployment
+
+-   Vercel
+-   GitHub
+
+### Development
+
+-   Node.js
+-   npm
+-   Git / GitHub
+
+## Project Structure
+
+``` text
+Karmika/
+├── database/
+│   ├── phase1_schema.sql
+│   ├── phase3_matching_functions.sql
+│   └── phase7_welfare.sql
+├── scripts/
+│   └── seed-demo-data.js
+├── src/
+│   ├── components/
+│   │   ├── admin/
+│   │   └── ...
+│   ├── i18n/
+│   │   ├── en.json
+│   │   └── hi.json
+│   ├── lib/
+│   │   ├── forecast.js
+│   │   ├── payment.js
+│   │   └── ...
+│   ├── pages/
+│   │   ├── AdminDashboard.jsx
+│   │   ├── BookService.jsx
+│   │   ├── BookingTracker.jsx
+│   │   ├── BrowseServices.jsx
+│   │   ├── MatchedWorkers.jsx
+│   │   ├── PaymentSummary.jsx
+│   │   ├── WorkerJobRequests.jsx
+│   │   └── WorkerProfileSetup.jsx
+│   ├── App.jsx
+│   └── ...
+├── .env.example
+├── package.json
+└── README.md
+```
+
+## Local Setup
+
+### 1. Clone the repository
+
+``` bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+cd Karmika
+```
+
+### 2. Install dependencies
+
+``` bash
 npm install
+```
+
+### 3. Configure environment variables
+
+Create a local `.env` file:
+
+``` env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Never commit `.env` to GitHub.
+
+## Database Setup
+
+Run the required SQL files in the Supabase SQL Editor in the appropriate
+phase order, including the database files present in the repository such
+as:
+
+``` text
+database/phase1_schema.sql
+database/phase3_matching_functions.sql
+database/phase7_welfare.sql
+```
+
+## Demo Data Seeder
+
+Karmika includes a local demo-data seeder for presentations and judging.
+It creates 12 demo workers, 5 demo customers, 26 demo bookings with
+multiple statuses, worker locations and skills, and welfare contribution
+records for eligible bookings.
+
+The seeder requires a Supabase service-role key because it creates demo
+authentication users and writes privileged database records.
+
+Add it only to your local `.env`:
+
+``` env
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+Do NOT use a `VITE_` prefix for this variable. Do NOT put it in frontend
+code, commit it to GitHub, or expose it to visitors.
+
+Run:
+
+``` bash
+npm run seed
+```
+
+The expected package script is:
+
+``` json
+"seed": "node --env-file=.env scripts/seed-demo-data.js"
+```
+
+## Demo Credentials
+
+The demo seeder uses the following password for all generated demo
+accounts:
+
+``` text
+Demo@12345
+```
+
+### Workers
+
+  Name            Email
+  --------------- ----------------------------
+  Ramesh Kumar    demo.worker1@karmika.test
+  Suresh Babu     demo.worker2@karmika.test
+  Lakshmi Devi    demo.worker3@karmika.test
+  Anitha Rani     demo.worker4@karmika.test
+  Manoj Gowda     demo.worker5@karmika.test
+  Venkatesh Rao   demo.worker6@karmika.test
+  Kavya Shetty    demo.worker7@karmika.test
+  Prakash Naik    demo.worker8@karmika.test
+  Divya Reddy     demo.worker9@karmika.test
+  Sunil Patil     demo.worker10@karmika.test
+  Meena Kumari    demo.worker11@karmika.test
+  Ganesh Pillai   demo.worker12@karmika.test
+
+### Customers
+
+  Name            Email
+  --------------- -----------------------------
+  Ananya Sharma   demo.customer1@karmika.test
+  Rohit Verma     demo.customer2@karmika.test
+  Priya Iyer      demo.customer3@karmika.test
+  Arjun Nair      demo.customer4@karmika.test
+  Sneha Joshi     demo.customer5@karmika.test
+
+## Run the Application
+
+``` bash
 npm run dev
 ```
-Open the printed localhost URL. You should see the Login/Signup page.
 
-### Step 6 - Test the full auth flow
-1. Sign up as a **customer** - you should land on a page saying
-   "Welcome, [your name]" with "Role confirmed: customer"
-2. Log out, sign up again with a different email as a **worker** -
-   you should land on the Worker Home stub instead
-3. To test the admin view: sign up normally, then go to Supabase's
-   Table Editor -> `users` table -> find your row -> manually change
-   `role` to `admin` -> refresh the app (or log out/in) -> you'll now
-   land on the Admin Home stub
+Production build:
 
-If all three of those work, **Phase 0 and Phase 1 are fully done and verified.**
-
-### Step 7 - Push to GitHub + deploy (do this now, not later)
-1. Create a new empty repo on GitHub
-2. `git init && git add . && git commit -m "Phase 0-1: setup, auth, schema"`
-3. `git remote add origin <your-repo-url> && git push -u origin main`
-4. Go to https://vercel.com -> sign up with GitHub -> "Add New Project" ->
-   import this repo
-5. Important: In Vercel's project settings -> Environment Variables,
-   add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` with the same
-   values from your `.env` (Vercel won't have your local .env file)
-6. Deploy - you now have a live URL you can share with your team and
-   later with judges
-
-## What's next (Phase 2)
-Once the above all works, come back and we'll build: Browse Services page,
-Book Service form with the map, and the real-time booking flow.
-
-## Folder guide
-```
-src/
-  pages/
-    LoginSignup.jsx      <- real auth, done
-    HomeRedirect.jsx     <- routes by role, done
-    CustomerHome.jsx     <- stub, Phase 2 builds this out
-    WorkerHome.jsx       <- stub, Phase 2 builds this out
-    AdminHome.jsx        <- stub, Phase 4 builds this out
-  components/
-    ProtectedRoute.jsx   <- guards routes by login+role
-  lib/
-    supabaseClient.js    <- the one Supabase connection, reused everywhere
-    useAuth.js           <- hook: get current user/role anywhere
-  i18n/
-    en.json / hi.json    <- add more languages by copying this pattern
-    index.js
-
-database/
-  phase1_schema.sql        <- run this once in Supabase SQL Editor
+``` bash
+npm run build
 ```
 
----
+Preview the production build:
 
-## PHASE 2 & 3 — Booking Flow + Geo-Matching Engine
-
-### What's new in this update
-- **Customer side**: Browse Services → Book Service (with a tap-to-pin map) → Matched Workers (ranked list) → My Bookings → live Booking Tracker
-- **Worker side**: My Profile (skills, availability, location) → Job Requests (nearby, skill-matched, accept/reject-safe) → status updates (Start Job / Mark Completed)
-- **The real Phase 3 engine**: two PostGIS SQL functions doing actual radius + skill matching, plus a rule-based JS scoring function (distance + rating + fairness) re-ranking the results — exactly the formula from the pipeline doc
-
-### Step 1 — Run the new SQL
-1. Supabase Dashboard → **SQL Editor** → New Query
-2. Open `database/phase3_matching_functions.sql`, copy ALL of it, paste, **Run**
-3. You should see "Success. No rows returned"
-
-### Step 2 — Reinstall & run
+``` bash
+npm run preview
 ```
-npm install
-npm run dev
-```
-(New packages — `react-leaflet`/`leaflet` — were already in Phase 0's install, but run `npm install` again just in case.)
 
-### Step 3 — Full end-to-end test (do this exactly, in order)
+## Demo / Judging Flow
 
-**As Worker A:**
-1. Sign up as a worker (or reuse your Phase 1 worker account)
-2. Go to **My Profile**, check a skill (e.g. "electrician"), leave "available" checked
-3. Click **"Update My Current Location"** — allow location permission when your browser asks
-4. Click **Save Profile**
-5. **Important**: go to Supabase → Table Editor → `worker_profiles` → find your row → set `verified` to `true` (this is the manual stand-in for Phase 4's admin approval screen)
+1.  Login as a customer.
+2.  Browse available services.
+3.  Create a booking with a location.
+4.  View nearby matched workers.
+5.  Inspect worker profiles, skills, and ratings.
+6.  Select a worker.
+7.  Login as the worker.
+8.  Accept the job request.
+9.  Start and complete the job.
+10. Add itemized charges.
+11. Return to the customer account.
+12. Open the Payment Summary.
+13. Complete the mock payment.
+14. Show the welfare contribution.
+15. Rate the worker.
+16. Open the Admin Dashboard.
+17. Demonstrate bookings, worker verification, welfare information, and
+    demand forecasting.
 
-**As Customer:**
-1. Sign up as a customer (different email, or your Phase 1 customer account) — **use a different browser or an incognito window** so Worker A stays logged in in the other tab
-2. On Browse Services, click **Book** on "Electrician Visit"
-3. Click **"Use My Current Location"** (pick somewhere within ~8km of where Worker A set their location — if testing on the same laptop, both will naturally be close since it's the same real-world location)
-4. Submit — you should land on **Matched Workers** and see Worker A listed with a distance and score
-5. Click **Track This Booking** — you'll see status "Pending"
+## Innovation & Uniqueness
 
-**Back as Worker A:**
-1. Go to **Job Requests** (or refresh) — you should see the new request under "New Requests Near You"
-2. Click **Accept Job**
-3. Click **Start Job**, then **Mark Completed**
+-   **Customer-driven worker selection** instead of silent
+    auto-assignment.
+-   **Skill + location based matching** to connect customers with
+    relevant nearby workers.
+-   **Transparent itemized pricing** for base service, parts, and
+    additional labour.
+-   **Integrated worker welfare fund** with a contribution linked to
+    completed/paid work.
+-   **Cooperative-first platform design** combining digital services
+    with worker-focused benefits.
 
-**Back on the Customer's Booking Tracker tab (don't refresh!):**
-- Watch the status pills update live from Pending → Accepted → In Progress → Completed with **zero refreshing** — this is Supabase Realtime working.
+## Future Scope
 
-If all of that happened, **Phase 2 and Phase 3 are fully working and verified.**
+-   Real payment gateway integration
+-   Real-time push notifications
+-   Advanced demand forecasting using historical platform data
+-   Automated identity/document verification
+-   More Indian regional languages
+-   Worker earnings and analytics dashboard
+-   Production-grade dispute resolution
+-   Fraud and abuse detection
+-   Native Android/iOS application
+-   Expanded cooperative governance features
 
-### Common issues
-- **"No verified workers found"**: almost always means either the worker's `verified` flag is still `false`, or their skill doesn't match the service category, or they're outside the 8km search radius. Check all three in Supabase's Table Editor.
-- **Map shows blank/grey tiles**: usually a slow network fetching OpenStreetMap tiles — wait a few seconds, or check your network settings allow `tile.openstreetmap.org`.
-- **"Too late — another worker already accepted"**: this is expected/correct behavior if two workers try to accept the same job — it's the race-condition protection working as designed.
+## Security Notes
 
-## What's next (Phase 4)
-The Admin/Federation Dashboard: a real verification queue (so you stop manually flipping `verified` in Supabase), all-bookings overview, and the demand-forecast chart.
+-   `.env` files must remain local and must not be committed.
+-   Supabase service-role credentials must never be exposed to the
+    browser.
+-   Frontend variables should use only the required `VITE_`
+    configuration.
+-   Database access should follow the project's Supabase security
+    configuration.
+-   Demo credentials are intended only for controlled demonstrations.
+
+## Project Status
+
+Karmika currently includes the core customer, worker, admin, matching,
+booking, payment-summary, welfare, multilingual, and demo-data workflows
+required for project demonstration.
+
+The payment flow is currently implemented as a mock payment rather than
+a live financial transaction.
+
+## Team
+
+**Karmika --- SIH 2026**
+
+A cooperative gig-services platform for household and community
+services.
